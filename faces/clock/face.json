@@ -15,7 +15,9 @@
     "mday": "11月11日",
     "hh": "10",
     "mm": "14",
-    "batt": "电量 82%"
+    "batt": "电量 82%",
+    "c_subj": "语文",
+    "c_stat": "上课中 已上10分"
   },
   "rows": [
     "wday",
@@ -23,6 +25,8 @@
     "div",
     "hh",
     "mm",
+    "c_subj",
+    "c_stat",
     "batt",
     "bbar",
     "version"

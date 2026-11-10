@@ -22,8 +22,10 @@
     "version": 22,
     "wday": 30,
     "mday": 28,
-    "big": 100,
-    "batt": 28
+    "big": 88,
+    "batt": 28,
+    "csubj": 34,
+    "cstat": 26
   },
   "rows": {
     "time": {
@@ -60,8 +62,8 @@
       "role": "accent"
     },
     "version": {
-      "y": 430,
-      "h": 24
+      "y": 436,
+      "h": 22
     },
     "info1": {
       "y": -100,
@@ -73,43 +75,55 @@
     },
     "wday": {
       "y": 30,
-      "h": 34,
+      "h": 30,
       "font": "wday",
       "role": "accent"
     },
     "mday": {
-      "y": 68,
-      "h": 32,
+      "y": 64,
+      "h": 30,
       "font": "mday",
       "role": "hint"
     },
     "div": {
-      "y": 112,
+      "y": 106,
       "w": 110,
       "h": 2
     },
     "hh": {
-      "y": 130,
-      "h": 108,
+      "y": 118,
+      "h": 96,
       "font": "big",
       "role": "hh"
     },
     "mm": {
-      "y": 242,
-      "h": 108,
+      "y": 216,
+      "h": 96,
       "font": "big",
       "role": "mm"
     },
     "batt": {
-      "y": 360,
-      "h": 32,
+      "y": 396,
+      "h": 26,
       "font": "batt",
       "role": "hint"
     },
     "bbar": {
-      "y": 404,
+      "y": 424,
       "w": 160,
-      "h": 6
+      "h": 5
+    },
+    "c_subj": {
+      "y": 322,
+      "h": 38,
+      "font": "csubj",
+      "role": "time"
+    },
+    "c_stat": {
+      "y": 362,
+      "h": 32,
+      "font": "cstat",
+      "role": "accent"
     }
   }
 }

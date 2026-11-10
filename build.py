@@ -78,12 +78,29 @@ def profile_lua(dev):
     return "%s\nlocal P = {\n%s,\n}\n%s" % (P_BEGIN, body, P_END)
 
 
+CORE_DIR = HERE / "shared" / "lua"
+
+
+def expand_includes(src):
+    """把 -- @@INCLUDE:<name>@@ 整块换成 shared/lua/<name>.lua。
+
+    课程表数据层是全表盘共用的（读共享文件 / 解析 usr.db / 算状态），
+    放进 core 后，加一款新表盘只要写 UI，不会各抄一份解析逻辑。
+    """
+    def sub(m):
+        f = CORE_DIR / (m.group(1) + ".lua")
+        if not f.exists():
+            raise SystemExit("缺少 core 片段: %s" % f)
+        return f.read_text(encoding="utf-8")
+    return re.sub(r"^-- @@INCLUDE:([A-Za-z0-9_]+)@@\s*$", sub, src, flags=re.M)
+
+
 def inject_lua(src, dev, ver):
     if P_BEGIN not in src or P_END not in src:
         raise SystemExit("源码缺少 @@PROFILE@@ 标记段，无法注入机型参数")
     head, rest = src.split(P_BEGIN, 1)
     _old, tail = rest.split(P_END, 1)
-    out = head + profile_lua(dev) + tail
+    out = expand_includes(head) + profile_lua(dev) + expand_includes(tail)
     out, n = re.subn(r'local VERSION = "v[0-9.]+"', 'local VERSION = "%s"' % ver, out, count=1)
     if n != 1:
         raise SystemExit("源码里找不到 VERSION 常量，无法注入版本号")
