@@ -37,6 +37,7 @@
     ],
     "bar_bg": "#1E3A52",
     "bar_pct": 0.35,
-    "ver_color": "#7A9EBE"
+    "ver_color": "#7A9EBE",
+    "battery": false
   }
 }

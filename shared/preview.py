@@ -195,5 +195,18 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
         dr.text((cx, vrow["y"] + vrow.get("h", 20) // 2), ver, font=f,
                 fill=_rgb(style.get("ver_color"), "#7A9EBE"), anchor="mm")
 
+    # ---- 四角压暗（vignette）----
+    # 跑道屏/圆角屏会把满幅亮色图裁成一整块亮圆的错觉，切换页里就读成「大圆圈」。
+    # 把屏幕圆角之外的区域压到近黑，读图时先看到屏幕形状，而不是一团色块。
+    vig = style.get("vignette")
+    if vig:
+        k = int(vig) if isinstance(vig, (int, float)) else 1
+        r = max(8, int(min(w, h) * 0.28))
+        dark = (int(0x05 * k), int(0x08 * k), int(0x0C * k))
+        mask = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(mask).rounded_rectangle([0, 0, w - 1, h - 1], radius=r, fill=255)
+        base = Image.new("RGB", (w, h), dark)
+        im = Image.composite(im, base, mask)
+
     im.save(path)
     return im

@@ -1,4 +1,5 @@
--- EV 石英 v4 · 巨型分体时间 + 周几 / 月日 / 电量图标 / 上课信息（科目·状态·下节）
+-- EV 石英 v5 · 巨型分体时间 + 周几月日 / 上课信息（科目·状态·下节）
+-- v5: 修两处硬伤 —— 补 EVENT_BUBBLE（长按进不去切换页）、全表字号提到 24-44（原来 14-20 真机上看不见）
 -- 设计取向与 class 表盘刻意拉开距离：
 --   class = 信息面板（多行小字、冷青强调、课程进度条）
 --   clock = 石英挂钟（超大字重、上下分体数字、暖白/琥珀双色、细分割线、无卡片）
@@ -61,9 +62,12 @@ pcall(function() ATL = lvgl.ALIGN.TOP_LEFT end)
 local scr = lvgl.Object(nil, {
     w = W, h = H, x = 0, y = 0,
     bg_color = C_BG, bg_opa = lvgl.OPA(100),
-    border_width = 0, pad_all = 0,
+    border_width = 0, pad_all = 0, radius = 0,
 })
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
+-- 关键：不加上抛，触摸事件止于本层，系统收不到长按 → 进不了表盘切换页。
+-- class 表盘一直有这一行，石英漏了，表现就是「长按无反应」。
+scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
 
 local function label(y, h, font, color, text)
     local p = {
@@ -88,23 +92,12 @@ local function place(o, x, y)
 end
 
 local l_wday = label(P.y_wday, P.h_wday, FONT_WDAY, C_WDAY, "—")
-local l_mday = label(P.y_mday, P.h_mday, FONT_MDAY, C_HINT, "—")
 local l_hh   = label(P.y_hh, P.h_hh, FONT_BIG, C_HH, "--")
 local l_mm   = label(P.y_mm, P.h_mm, FONT_BIG, C_MM, "--")
 local l_subj = label(P.y_c_subj, P.h_c_subj, FONT_SUBJ, C_HH, "读取课表中")
 local l_stat = label(P.y_c_stat, P.h_c_stat, FONT_STAT, C_WDAY, "")
 local l_next = label(P.y_c_next, P.h_c_next, FONT_NEXT, C_HINT, "")
 local l_ver  = label(P.y_version, P.h_version, FONT_VER, C_DIM, VERSION)
-
--- ---------- 分割线 ----------
-local DIV_W, DIV_H = P.w_div, math.max(1, P.h_div)
-pcall(function()
-    local div = lvgl.Object(scr, {
-        w = DIV_W, h = DIV_H, bg_color = C_DIV, bg_opa = lvgl.OPA(100),
-        border_width = 0, radius = 0,
-    })
-    place(div, math.floor((W - DIV_W) / 2), P.y_div)
-end)
 
 local WD = { "周日", "周一", "周二", "周三", "周四", "周五", "周六" }
 local function two(n) return (n < 10) and ("0" .. n) or tostring(n) end
@@ -115,8 +108,8 @@ local function refresh()
     local t = os.date("*t", os.time())
     l_hh:set { text = two(t.hour) }
     l_mm:set { text = two(t.min) }
-    l_wday:set { text = WD[(t.wday or 1)] or "—" }
-    l_mday:set { text = string.format("%d月%d日", t.month or 1, t.day or 1) }
+    l_wday:set { text = string.format("%s  %d月%d日", WD[(t.wday or 1)] or "—",
+                                      t.month or 1, t.day or 1) }
 
     -- 上课信息：与 class 表盘共用同一份数据层与状态机。
     -- 整段 pcall：真机上一次文件读取异常 / 课表格式意外，都不该把表盘拖黑
@@ -147,4 +140,4 @@ pcall(function()
 end)
 
 refresh()
-print("EV_QUARTZ_V4", W, H, VERSION, "courses=" .. course_count)
+print("EV_QUARTZ_V5", W, H, VERSION, "courses=" .. course_count)

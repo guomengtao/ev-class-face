@@ -11,8 +11,7 @@
     "band10pro"
   ],
   "preview_sample": {
-    "wday": "周三",
-    "mday": "11月11日",
+    "wday": "周三  11月11日",
     "hh": "10",
     "mm": "14",
     "c_subj": "语文",
@@ -21,8 +20,6 @@
   },
   "rows": [
     "wday",
-    "mday",
-    "div",
     "hh",
     "mm",
     "c_subj",

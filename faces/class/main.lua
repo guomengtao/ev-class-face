@@ -66,6 +66,9 @@ local scr = lvgl.Object(nil, {
     w = W, h = H, x = 0, y = 0,
     bg_color = th.bg, bg_opa = lvgl.OPA(100),
     border_width = 0, pad_all = 0,
+    -- 必须显式 radius=0：LVGL 默认样式带圆角，亮色底会被裁成一块圆角大色块，
+    -- 在切换页/真机上就是用户反复看到的「大圆圈」。深色表盘看不出来，亮色表盘特别明显。
+    radius = 0,
 })
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
