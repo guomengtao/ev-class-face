@@ -74,6 +74,22 @@ def profile_lua(dev):
     if "bar" in rows:
         kv.append(("bar_w", rows["bar"].get("w")))
         kv.append(("bar_h", rows["bar"].get("h")))
+
+    # 行的短别名：老表盘源码里写的是 y_subj / y_stat / y_ver / y_i1 / y_i2 / h_small，
+    # 而 devices 里的规范键是 subject / status / version / info1 / info2。
+    # 只招字体别名不招行别名，会让这些引用全变 nil（label 的 y_ofs/h 丢失 → 多行挤在顶部）。
+    alias_rows = {
+        "y_subj": ("subject", "y"), "h_subj": ("subject", "h"),
+        "y_stat": ("status", "y"),  "h_stat": ("status", "h"),
+        "y_ver":  ("version", "y"),
+        "y_i1":   ("info1", "y"),   "y_i2":   ("info2", "y"),
+        "h_small": ("version", "h"),
+    }
+    seen = dict(kv)
+    for alias, (src_key, kind) in alias_rows.items():
+        v = rows.get(src_key, {}).get(kind)
+        if v is not None and alias not in seen:
+            kv.append((alias, v))
     body = ",\n".join("  %s = %s" % (k, v) for k, v in kv)
     return "%s\nlocal P = {\n%s,\n}\n%s" % (P_BEGIN, body, P_END)
 
@@ -105,6 +121,24 @@ def inject_lua(src, dev, ver):
     if n != 1:
         raise SystemExit("源码里找不到 VERSION 常量，无法注入版本号")
     return out
+
+
+def check_profile_refs(src):
+    """构建期硬校验：源码里引用到的 P.<key> 必须都出现在注入的 profile 表里。
+
+    踩过的坑：只给字体加短别名、没给行加，导致 P.y_subj/P.h_subj 全为 nil，
+    label 的 y_ofs 与 h 丢失 → 多行文字叠在屏幕顶部，真机看起来「表盘坏了」。
+    luac -p 只查语法，查不出这种 nil，所以必须在这里拦。
+    """
+    m = re.search(r"local P = \{(.*?)\n\}", src, re.S)
+    if not m:
+        raise SystemExit("profile 段缺失")
+    defined = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*=", m.group(1)))
+    refs = set(re.findall(r"\bP\.([A-Za-z_][A-Za-z0-9_]*)", src))
+    missing = sorted(refs - defined)
+    if missing:
+        raise SystemExit("profile 缺少键（运行时会 nil）: %s" % ", ".join(missing))
+    return len(refs)
 
 
 def minify(src):
@@ -143,6 +177,8 @@ def main():
     old_ver, ver = bump_version(vf, do_bump=not (args.no_bump or args.preview_only))
     src = (fdir / fmeta["lua"]).read_text(encoding="utf-8")
     lua = inject_lua(src, dev, ver)
+    nref = check_profile_refs(lua)
+    print(f"  profile 引用自检通过：{nref} 个 P.<key> 全部有定义")
 
     w, h = dev["screen"]
     png = HERE / "dist" / ("%s-%s-%s.png" % (args.face, args.device, ver))

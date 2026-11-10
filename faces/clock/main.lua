@@ -118,17 +118,25 @@ local function refresh()
     l_wday:set { text = WD[(t.wday or 1)] or "—" }
     l_mday:set { text = string.format("%d月%d日", t.month or 1, t.day or 1) }
 
-    -- 上课信息：与 class 表盘共用同一份数据层与状态机
-    local text = read_shared()
-    local sig = text or "#none"
-    if sig ~= sig_cache then parse_schedule(text); sig_cache = sig end
-    local s = compute()
-    l_subj:set { text = cut(s.subject, 6) }
-    l_stat:set { text = cut(s.status or "", 7) }
-    if not text then l_next:set { text = "请开课程表" }
-    elseif (s.next or "") == "" then l_next:set { text = "" }
-    else l_next:set { text = cut(s.next, 8) } end
-
+    -- 上课信息：与 class 表盘共用同一份数据层与状态机。
+    -- 整段 pcall：真机上一次文件读取异常 / 课表格式意外，都不该把表盘拖黑
+    -- （表盘一崩，长按切换也不响应，表现就是「长按没反应」）。
+    local ok = pcall(function()
+        local text = read_shared()
+        local sig = text or "#none"
+        if sig ~= sig_cache then parse_schedule(text); sig_cache = sig end
+        local s = compute() or {}
+        l_subj:set { text = cut(s.subject or "EV课程表", 6) }
+        l_stat:set { text = cut(s.status or "", 7) }
+        if not text then l_next:set { text = "请开课程表" }
+        elseif (s.next or "") == "" then l_next:set { text = "" }
+        else l_next:set { text = cut(s.next, 8) } end
+    end)
+    if not ok then
+        l_subj:set { text = "EV课程表" }
+        l_stat:set { text = "数据未就绪" }
+        l_next:set { text = "" }
+    end
 end
 
 function ScreenStateChangedCB(pre, now, reason)
