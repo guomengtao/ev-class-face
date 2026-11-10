@@ -39,5 +39,6 @@
     "bar_pct": 0.35,
     "ver_color": "#7A9EBE",
     "battery": false
-  }
+  },
+  "short_name": "EV Class"
 }

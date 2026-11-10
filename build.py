@@ -117,7 +117,7 @@ def inject_lua(src, dev, ver):
     head, rest = src.split(P_BEGIN, 1)
     _old, tail = rest.split(P_END, 1)
     out = expand_includes(head) + profile_lua(dev) + expand_includes(tail)
-    out, n = re.subn(r'local VERSION = "v[0-9.]+"', 'local VERSION = "%s"' % ver, out, count=1)
+    out, n = re.subn(r'local VERSION = "[^"]*"', 'local VERSION = "%s"' % ver, out, count=1)
     if n != 1:
         raise SystemExit("源码里找不到 VERSION 常量，无法注入版本号")
     return out
@@ -175,15 +175,20 @@ def main():
         raise SystemExit(f"表盘 {args.face} 未声明支持机型 {args.device}（face.json devices）")
 
     old_ver, ver = bump_version(vf, do_bump=not (args.no_bump or args.preview_only))
+    # 底部署名：把表盘自己的名字并进版本行（EV Class v1.0.11 / EV Quartz v1.0.7）。
+    # 多条表盘装在同一只表上时，长按切换页与表盘底部都靠这行区分，避免「哪个是哪个」。
+    # 不新增 label 行，只替换 VERSION 字符串内容 —— class 的 lua 块只剩三百多字节余量。
+    short = fmeta.get("short_name") or fmeta.get("name_en") or args.face
+    ver_label = "%s %s" % (short, ver)
     src = (fdir / fmeta["lua"]).read_text(encoding="utf-8")
-    lua = inject_lua(src, dev, ver)
+    lua = inject_lua(src, dev, ver_label)
     nref = check_profile_refs(lua)
     print(f"  profile 引用自检通过：{nref} 个 P.<key> 全部有定义")
 
     w, h = dev["screen"]
     png = HERE / "dist" / ("%s-%s-%s.png" % (args.face, args.device, ver))
     png.parent.mkdir(exist_ok=True)
-    preview_mod.render(dev, ver, png, fmeta.get("preview_sample"),
+    preview_mod.render(dev, ver_label, png, fmeta.get("preview_sample"),
                        fmeta.get("preview_style"), fmeta.get("rows"))
 
     print(f"[{args.face}] {dev['label']}  {w}x{h}  版本 {old_ver} -> {ver}")
