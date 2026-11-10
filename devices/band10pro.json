@@ -1,0 +1,115 @@
+{
+  "name": "band10pro",
+  "label": "小米手环 10 Pro（336x480 方屏）",
+  "device_type": 0,
+  "screen": [
+    336,
+    480
+  ],
+  "safe_area": {
+    "top": 20,
+    "bottom": 462
+  },
+  "content_width": 300,
+  "base": null,
+  "base_note": "尚未取得 336x480 官方基底 .face；放入 faces/<name>/base/ 后在 devices 填 base 即可出包",
+  "fonts": {
+    "time": 62,
+    "subject": 36,
+    "status": 30,
+    "body": 28,
+    "info": 28,
+    "version": 22,
+    "wday": 30,
+    "mday": 28,
+    "big": 100,
+    "batt": 28
+  },
+  "rows": {
+    "time": {
+      "y": 30,
+      "h": 62,
+      "role": "time"
+    },
+    "status": {
+      "y": 106,
+      "h": 34
+    },
+    "bar": {
+      "y": 150,
+      "w": 220,
+      "h": 8
+    },
+    "subject": {
+      "y": 166,
+      "h": 48
+    },
+    "d1": {
+      "y": 236,
+      "h": 38,
+      "role": "sub"
+    },
+    "d2": {
+      "y": 288,
+      "h": 38,
+      "role": "sub"
+    },
+    "next": {
+      "y": 336,
+      "h": 36,
+      "role": "accent"
+    },
+    "version": {
+      "y": 430,
+      "h": 24
+    },
+    "info1": {
+      "y": -100,
+      "h": 26
+    },
+    "info2": {
+      "y": -120,
+      "h": 26
+    },
+    "wday": {
+      "y": 30,
+      "h": 34,
+      "font": "wday",
+      "role": "accent"
+    },
+    "mday": {
+      "y": 68,
+      "h": 32,
+      "font": "mday",
+      "role": "hint"
+    },
+    "div": {
+      "y": 112,
+      "w": 110,
+      "h": 2
+    },
+    "hh": {
+      "y": 130,
+      "h": 108,
+      "font": "big",
+      "role": "hh"
+    },
+    "mm": {
+      "y": 242,
+      "h": 108,
+      "font": "big",
+      "role": "mm"
+    },
+    "batt": {
+      "y": 360,
+      "h": 32,
+      "font": "batt",
+      "role": "hint"
+    },
+    "bbar": {
+      "y": 404,
+      "w": 160,
+      "h": 6
+    }
+  }
+}

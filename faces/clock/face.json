@@ -1,0 +1,48 @@
+{
+  "name": "clock",
+  "title": "EV 石英",
+  "id": "882610319",
+  "id_note": "设备识别同款表盘的主键，正式发布后永久固定；跨机型共用同一 ID。与 class(882610318) 必须不同",
+  "name_en": "EV Quartz",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "band9",
+    "band10pro"
+  ],
+  "preview_sample": {
+    "wday": "周三",
+    "mday": "11月11日",
+    "hh": "10",
+    "mm": "14",
+    "batt": "电量 82%"
+  },
+  "rows": [
+    "wday",
+    "mday",
+    "div",
+    "hh",
+    "mm",
+    "batt",
+    "bbar",
+    "version"
+  ],
+  "preview_style": {
+    "bg": [
+      "#0C0D10",
+      "#191C23",
+      "#0C0D10"
+    ],
+    "card": false,
+    "div_color": "#2A2F3A",
+    "bar_bg": "#232833",
+    "bar_pct": 0.82,
+    "ver_color": "#4A5160",
+    "roles": {
+      "hh": "#FFF6E8",
+      "mm": "#FFB347",
+      "wday": "#7FD4FF",
+      "hint": "#8A93A6"
+    }
+  }
+}

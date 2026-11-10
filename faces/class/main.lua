@@ -46,14 +46,32 @@ local function F(size, fallback)
     if ok and f then return f end
     return fallback
 end
-local FONT_TIME = F(44, B.MONTSERRAT_32 or B.MONTSERRAT_14)
-local FONT_SUBJ = F(30, B.MONTSERRAT_32 or B.MONTSERRAT_14)
-local FONT_STAT = F(28, B.MONTSERRAT_24 or B.MONTSERRAT_14)
-local FONT_BODY = F(24, B.MONTSERRAT_14)
-local FONT_INFO = F(24, B.MONTSERRAT_14)   -- 诊断行也放大到 24，之前 22 在真机上偏小
-local FONT_VER  = F(20, B.MONTSERRAT_14)   -- 版本号行
+-- @@PROFILE_BEGIN@@
+-- 机型 profile：构建时由 build.py 按 devices/<device>.json 整块替换。
+-- 表盘逻辑只有一份，坐标与字号全部来自这里，源码不写死任何屏幕尺寸。
+local P = {
+  safe_top = 96, safe_bottom = 394,
+  f_time = 44, f_subj = 30, f_stat = 28, f_body = 24, f_info = 24, f_ver = 20,
+  y_time = 102, h_time = 52,
+  y_stat = 154, h_stat = 30,
+  y_subj = 184, h_subj = 40,
+  y_d1 = 226, h_d1 = 28,
+  y_d2 = 254, h_d2 = 28,
+  y_next = 282, h_next = 28,
+  y_bar = 314, bar_w = 132, bar_h = 6,
+  y_ver = 326, y_i1 = 350, y_i2 = 370, h_small = 24,
+}
+-- @@PROFILE_END@@
+
+local FONT_TIME = F(P.f_time, B.MONTSERRAT_32 or B.MONTSERRAT_14)
+local FONT_SUBJ = F(P.f_subj, B.MONTSERRAT_32 or B.MONTSERRAT_14)
+local FONT_STAT = F(P.f_stat, B.MONTSERRAT_24 or B.MONTSERRAT_14)
+local FONT_BODY = F(P.f_body, B.MONTSERRAT_14)
+local FONT_INFO = F(P.f_info, B.MONTSERRAT_14)
+local FONT_VER  = F(P.f_ver, B.MONTSERRAT_14)   -- 版本号行
 
 local VERSION = "v1.0.0"
+
 
 -- 居中三重保险：官方 TOP_MID 常量 + text_align 多候选（含数字 1=LV_TEXT_ALIGN_CENTER）
 local ATM = nil
@@ -313,15 +331,15 @@ local function time_label(y, h, font, color, text)
     return o
 end
 
-local l_time = time_label(102, 52, FONT_TIME, th.time, "--:--")
-local l_stat = label(154, 30, FONT_STAT, th.accent, "读取课表中")
-local l_subj = label(184, 40, FONT_SUBJ, th.time, "EV课程表")
-local l_d1   = label(226, 28, FONT_BODY, th.sub, "")
-local l_d2   = label(254, 28, FONT_BODY, th.sub, "")
-local l_next = label(282, 28, FONT_BODY, th.accent, "")
+local l_time = time_label(P.y_time, P.h_time, FONT_TIME, th.time, "--:--")
+local l_stat = label(P.y_stat, P.h_stat, FONT_STAT, th.accent, "读取课表中")
+local l_subj = label(P.y_subj, P.h_subj, FONT_SUBJ, th.time, "EV课程表")
+local l_d1   = label(P.y_d1, P.h_d1, FONT_BODY, th.sub, "")
+local l_d2   = label(P.y_d2, P.h_d2, FONT_BODY, th.sub, "")
+local l_next = label(P.y_next, P.h_next, FONT_BODY, th.accent, "")
 
 -- 课程进度条：上课中按已上比例填充，视觉上给「还剩多久」一个直觉
-local BAR_W, BAR_H = 132, 6
+local BAR_W, BAR_H = P.bar_w, P.bar_h
 local bar_x = math.floor((W - BAR_W) / 2)
 local AL = nil
 pcall(function() AL = lvgl.ALIGN.TOP_LEFT end)
@@ -341,13 +359,13 @@ pcall(function()
         w = 0, h = BAR_H, bg_color = th.accent, bg_opa = lvgl.OPA(100),
         border_width = 0, radius = 3,
     })
-    place(bar_bg, 314)
-    place(bar_fg, 314)
+    place(bar_bg, P.y_bar)
+    place(bar_fg, P.y_bar)
 end)
 
-local l_ver  = label(326, 24, FONT_VER, th.hint, VERSION)
-local l_info1 = label(350, 24, FONT_VER, th.hint, "未探测")
-local l_info2 = label(370, 24, FONT_VER, th.hint, "未读取")
+local l_ver  = label(P.y_ver, P.h_small, FONT_VER, th.hint, VERSION)
+local l_info1 = label(P.y_i1, P.h_small, FONT_VER, th.hint, "未探测")
+local l_info2 = label(P.y_i2, P.h_small, FONT_VER, th.hint, "未读取")
 
 local function apply_theme()
     th = THEMES[theme_idx]

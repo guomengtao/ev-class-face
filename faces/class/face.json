@@ -1,0 +1,42 @@
+{
+  "name": "class",
+  "title": "EV 课程提醒",
+  "id": "882610318",
+  "id_note": "设备识别同款表盘的主键，正式发布后永久固定；跨机型共用同一 ID",
+  "name_en": "EV Class Face",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "band9",
+    "band10pro"
+  ],
+  "preview_sample": {
+    "time": "10:14",
+    "status": "上课中",
+    "subject": "语文",
+    "d1": "已上10分",
+    "d2": "下课35分",
+    "next": "下节数学"
+  },
+  "rows": [
+    "time",
+    "status",
+    "bar",
+    "subject",
+    "d1",
+    "d2",
+    "next",
+    "version"
+  ],
+  "preview_style": {
+    "card": false,
+    "bg": [
+      "#071322",
+      "#13314F",
+      "#071322"
+    ],
+    "bar_bg": "#1E3A52",
+    "bar_pct": 0.35,
+    "ver_color": "#7A9EBE"
+  }
+}

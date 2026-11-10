@@ -1,0 +1,114 @@
+{
+  "name": "band9",
+  "label": "小米手环 9（跑道屏）",
+  "device_type": 366,
+  "screen": [
+    192,
+    490
+  ],
+  "safe_area": {
+    "top": 96,
+    "bottom": 394
+  },
+  "content_width": 160,
+  "base": "band9.face",
+  "fonts": {
+    "time": 44,
+    "subject": 30,
+    "status": 26,
+    "body": 24,
+    "info": 24,
+    "version": 18,
+    "wday": 20,
+    "mday": 22,
+    "big": 72,
+    "batt": 20
+  },
+  "rows": {
+    "time": {
+      "y": 100,
+      "h": 48,
+      "role": "time"
+    },
+    "status": {
+      "y": 160,
+      "h": 28
+    },
+    "bar": {
+      "y": 200,
+      "w": 132,
+      "h": 5
+    },
+    "subject": {
+      "y": 217,
+      "h": 40
+    },
+    "d1": {
+      "y": 269,
+      "h": 26,
+      "role": "sub"
+    },
+    "d2": {
+      "y": 307,
+      "h": 26,
+      "role": "sub"
+    },
+    "next": {
+      "y": 341,
+      "h": 24,
+      "role": "accent"
+    },
+    "version": {
+      "y": 376,
+      "h": 18
+    },
+    "info1": {
+      "y": -100,
+      "h": 22
+    },
+    "info2": {
+      "y": -120,
+      "h": 22
+    },
+    "wday": {
+      "y": 100,
+      "h": 24,
+      "font": "wday",
+      "role": "accent"
+    },
+    "mday": {
+      "y": 128,
+      "h": 26,
+      "font": "mday",
+      "role": "hint"
+    },
+    "div": {
+      "y": 168,
+      "w": 64,
+      "h": 2
+    },
+    "hh": {
+      "y": 172,
+      "h": 78,
+      "font": "big",
+      "role": "hh"
+    },
+    "mm": {
+      "y": 254,
+      "h": 78,
+      "font": "big",
+      "role": "mm"
+    },
+    "batt": {
+      "y": 336,
+      "h": 22,
+      "font": "batt",
+      "role": "hint"
+    },
+    "bbar": {
+      "y": 364,
+      "w": 88,
+      "h": 4
+    }
+  }
+}
