@@ -21,6 +21,8 @@
 """
 import argparse
 import hashlib
+import json
+import re
 import struct
 import subprocess
 import sys
@@ -35,8 +37,26 @@ DEFAULT_PNG = HERE / "预览图-EV课程提醒-192x490.png"
 
 # v4 换新 ID：设备可能按表盘 ID 缓存切换卡片缩略图，同 ID 覆盖安装不刷新 →
 # 这是「本来好的又坏成大圈 / 重复出现」的假设 H1，换 ID 用来证伪。
-FACE_ID = b"882610317"
+FACE_ID = b"882610318"
 FACE_NAME = b"EV Class Face"
+VERSION_FILE = HERE / "version.json"
+
+
+def load_version(bump=True):
+    """读 version.json，返回 (旧版本, 新版本, dict)。
+
+    正式发布后 ID 固定不变、只走版本号；每次构建默认把 patch 位 +1（v1.0.1 → v1.0.2）。
+    传 --no-bump 可只读不改，用于对照包 / 重打同版本。
+    """
+    data = {"major": 1, "minor": 0, "patch": 0}
+    if VERSION_FILE.exists():
+        data.update(json.loads(VERSION_FILE.read_text()))
+    old = "v%d.%d.%d" % (data["major"], data["minor"], data["patch"])
+    if bump:
+        data["patch"] += 1
+        VERSION_FILE.write_text(json.dumps(data, indent=2) + "\n")
+    new = "v%d.%d.%d" % (data["major"], data["minor"], data["patch"])
+    return old, new, data
 ENTRY_OFF, ENTRY_END, ENTRY_STRIDE = 0x110, 0x200, 16
 
 
@@ -113,7 +133,7 @@ def rle_decode(body, blksize=3):
     return bytes(px)
 
 
-def build_preview_png(w, h, path):
+def build_preview_png(w, h, path, ver="v1.0.0"):
     """v1.0.0 预览图：跑道底 + 居中卡片。
 
     旧版两个硬伤（就是「长按切换页又成大圈」的根因）：
@@ -172,7 +192,7 @@ def build_preview_png(w, h, path):
     dr.rounded_rectangle([bar_l, 330, bar_r, 336], radius=3, fill=(30, 58, 82))
     dr.rounded_rectangle([bar_l, 330, bar_l + int((bar_r - bar_l) * 0.35), 336],
                          radius=3, fill=(127, 212, 255))
-    dr.text((cx, 410), "v1.0.0", font=tip, fill=(122, 158, 190))
+    dr.text((cx, 410), ver, font=tip, fill=(122, 158, 190))
     im.save(path)
     return im
 
@@ -186,7 +206,11 @@ def main():
     ap.add_argument("--face-id", default=FACE_ID.decode())
     ap.add_argument("--name", default=FACE_NAME.decode())
     ap.add_argument("--no-preview", action="store_true", help="保留官方预览图，只注入 Lua")
+    ap.add_argument("--no-bump", action="store_true", help="不改版本号，直接用 version.json 现值")
     args = ap.parse_args()
+
+    old_ver, new_ver, _ = load_version(bump=not args.no_bump)
+    print(f"版本 {old_ver} -> {new_ver}")
 
     src = Path(args.src)
     d = bytearray(src.read_bytes())
@@ -203,8 +227,12 @@ def main():
     d[0x28:0x32] = idb.ljust(10, b"\0")
     d[0x68:0x80] = nb.ljust(24, b"\0")
 
-    # 2) 等长注入 lua/main.lua
-    lua = Path(args.lua).read_bytes()
+    # 2) 等长注入 lua/main.lua（版本号由 version.json 注入，源码里留占位值）
+    lua_src = Path(args.lua).read_text(encoding="utf-8")
+    lua_src, n_ver = re.subn(r'local VERSION = "v[0-9.]+"',
+                             f'local VERSION = "{new_ver}"', lua_src, count=1)
+    assert n_ver == 1, "lua 里找不到 VERSION 常量，无法注入版本号"
+    lua = lua_src.encode("utf-8")
     entries = parse_entries(d)
     assert "lua/main.lua" in entries, f"基底缺少 lua/main.lua: {list(entries)}"
     coff, cs, bs = entries["lua/main.lua"]
@@ -221,7 +249,7 @@ def main():
 
     # 3) 预览：官方 blksize=3 RGB888 纯 RLE，8 字节头原样保留
     if not args.no_preview:
-        im = build_preview_png(w, h, args.png)
+        im = build_preview_png(w, h, args.png, new_ver)
         px = bytearray()
         for (r_, g_, b_) in im.convert("RGB").getdata():
             px += bytes((r_, g_, b_))

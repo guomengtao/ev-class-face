@@ -40,3 +40,51 @@ python3 build_face.py --src <官方 Band9 基底.face> --lua main.lua --out out.
 ## 版本
 
 - v1.0.0 首个可用版本：数据链路打通、跑道屏排版、进度条、版本号
+
+## 表盘 ID 与版本号（重要约定）
+
+### ID：正式发布后**永久固定**，不再更换
+
+`.face` 头 `0x28..0x32` 的 10 字节表盘 ID 是设备识别同款表盘的唯一主键：
+
+- 设备的 `watchface_list.json` 以 ID 为键；同 ID 覆盖安装 = **原地升级**，用户设置（配色）、切换列表位置都保留
+- 换 ID = 设备认为这是**另一款表盘**，旧的不会自动删，切换列表里会越堆越多（本项目开发期就吃过这个亏：`882610315/316/317/318` 四个残留在列表里）
+- 上架/分发后 ID 变了，用户装新版会出现「表盘多了一个、旧的那个还在」
+
+因此 **ID `882610318` 固定不变**，以后只走版本号。
+
+> 开发期换 ID 只有一个合法用途：排查「设备按 ID 缓存切换卡片缩略图、同 ID 覆盖不刷新」这类问题时做对照。
+
+### 版本号：第三位自动 +1
+
+`version.json` 保存 `major/minor/patch`。每次执行 `build_face.py` 会**自动 patch +1** 并写回：
+
+```
+v1.0.1 → 构建一次 → v1.0.2
+```
+
+版本号同时注入两处：Lua 里的 `local VERSION`（表盘底部显示）+ 预览图右下角文字。
+需要只读不改（重打同一版本、生成对照包）时加 `--no-bump`。
+
+major/minor 手动改 `version.json` 即可，遵循语义化版本：破坏性变更 / 新功能 / 修复。
+
+## Lua 表盘能力边界（已核实）
+
+数据订阅走 `dataman` 模块，值统一 **256 倍编码**，取用必须 `value // 256`；`2147483647`（INT_MAX）表示无效。
+
+| 能力 | 接口 | 状态 |
+|---|---|---|
+| 电量 | `dataman.subscribe("systemStatusBattery", obj, cb)` | 官方 Band9 表盘在用，可直接用 |
+| 步数 | `dataman.subscribe("healthStepCount", ...)` | 键名已确认 |
+| 心率 | `dataman.subscribe("healthHeartRate", ...)` | 键名已确认 |
+| 压力 | `dataman.subscribe("healthPressureIndex", ...)` | 0–100 |
+| 海拔 | `dataman.subscribe("systemSensorFusionAltitude", ...)` | 米 |
+| 日出/日落 | `weatherCurrentSunRiseHour` 等 | 可用 |
+| 时间/日期 | `timeHour`/`timeMinute`/`dateDay`/`dateWeek` | 可用 |
+| 多页面 | 多个 `lvgl.Object` 根 + 显隐切换 / `lvgl.screen` 切换 | LVGL 原生支持 |
+| 动画 | `obj:Anim{...}` | 官方样本在用 |
+| 触摸 | `onevent(lvgl.EVENT.SHORT_CLICKED / LONG_CLICKED, cb)` | 已用于换配色 |
+| 文件读写 | `io.open` + `os.execute('cat ...')` | 表盘目录、`/tmp` 可读写 |
+
+**反向回传的限制**：表盘能写文件，但真机上**读不到其他快应用的私有目录**（官方明确限制）。
+所以「表盘 → 快应用」回传需要走公共路径（如 `/tmp`）或由快应用主动来读，**未验证**，属于待实测项。
