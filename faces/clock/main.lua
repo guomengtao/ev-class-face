@@ -1,8 +1,9 @@
--- EV 石英 v2 · 巨型分体时间 + 周几 / 月日 / 电量 + 上课信息
+-- EV 石英 v3 · 巨型分体时间 + 周几 / 月日 / 电量图标 / 上课信息（科目·状态·下节）
 -- 设计取向与 class 表盘刻意拉开距离：
---   class = 信息面板（多行小字、冷青强调、进度条）
+--   class = 信息面板（多行小字、冷青强调、课程进度条）
 --   clock = 石英挂钟（超大字重、上下分体数字、暖白/琥珀双色、细分割线、无卡片）
--- 课程表数据层不在这里抄：由 build.py 从 shared/lua/schedule_core.lua 注入。
+-- 电量按 macOS 状态栏口径：电池图标 + 百分比，不写「电量」二字，放在版本号同一行右侧。
+-- 课程表数据层由 build.py 从 shared/lua/schedule_core.lua 注入，不在此重复实现。
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
 
@@ -18,17 +19,16 @@ end
 -- 机型 profile：构建时由 build.py 按 devices/<device>.json 整块替换。
 local P = {
   safe_top = 96, safe_bottom = 394,
-  f_wday = 18, f_mday = 18, f_big = 60, f_csubj = 24, f_cstat = 18,
-  f_batt = 16, f_version = 18,
-  y_wday = 100, h_wday = 22,
-  y_mday = 122, h_mday = 22,
-  y_div = 150, w_div = 60, h_div = 2,
-  y_hh = 158, h_hh = 64,
-  y_mm = 224, h_mm = 64,
-  y_c_subj = 294, h_c_subj = 26,
-  y_c_stat = 322, h_c_stat = 22,
-  y_batt = 348, h_batt = 18,
-  y_bbar = 368, w_bbar = 88, h_bbar = 3,
+  f_wday = 16, f_mday = 16, f_big = 50, f_csubj = 20, f_cstat = 16,
+  f_cnext = 14, f_batt = 14, f_version = 16,
+  y_wday = 100, h_wday = 20,
+  y_mday = 122, h_mday = 20,
+  y_div = 154, w_div = 56, h_div = 2,
+  y_hh = 166, h_hh = 54,
+  y_mm = 224, h_mm = 54,
+  y_c_subj = 288, h_c_subj = 22,
+  y_c_stat = 314, h_c_stat = 18,
+  y_c_next = 340, h_c_next = 16,
   y_version = 376, h_version = 18,
 }
 -- @@PROFILE_END@@
@@ -40,6 +40,7 @@ local FONT_MDAY = F(P.f_mday, B.MONTSERRAT_14)
 local FONT_BIG  = F(P.f_big, B.MONTSERRAT_32 or B.MONTSERRAT_14)
 local FONT_SUBJ = F(P.f_csubj, B.MONTSERRAT_14)
 local FONT_STAT = F(P.f_cstat, B.MONTSERRAT_14)
+local FONT_NEXT = F(P.f_cnext, B.MONTSERRAT_14)
 local FONT_BATT = F(P.f_batt, B.MONTSERRAT_14)
 local FONT_VER  = F(P.f_version, B.MONTSERRAT_14)
 
@@ -50,12 +51,13 @@ local C_MM    = 0xFFB347
 local C_WDAY  = 0x7FD4FF
 local C_HINT  = 0x8A93A6
 local C_DIV   = 0x2A2F3A
-local C_BARBG = 0x232833
+local C_DIM   = 0x4A5160
 
 -- @@INCLUDE:schedule_core@@
 
-local ATM = nil
+local ATM, ATL = nil, nil
 pcall(function() ATM = lvgl.ALIGN.TOP_MID end)
+pcall(function() ATL = lvgl.ALIGN.TOP_LEFT end)
 
 local scr = lvgl.Object(nil, {
     w = W, h = H, x = 0, y = 0,
@@ -72,6 +74,19 @@ local function label(y, h, font, color, text)
     if ATM then p.align = { type = ATM, x_ofs = 0, y_ofs = y } else p.x, p.y = 0, y end
     return lvgl.Label(scr, p)
 end
+-- 角标用：左上角绝对定位
+local function label_at(x, y, h, font, color, text)
+    local p = {
+        h = h, text = text or "", text_font = font, text_color = color,
+        bg_opa = 0, border_width = 0, pad_all = 0,
+    }
+    if ATL then p.align = { type = ATL, x_ofs = x, y_ofs = y } else p.x, p.y = x, y end
+    return lvgl.Label(scr, p)
+end
+local function place(o, x, y)
+    if ATL then o:set { align = { type = ATL, x_ofs = x, y_ofs = y } }
+    else o:set { x = x, y = y } end
+end
 
 local l_wday = label(P.y_wday, P.h_wday, FONT_WDAY, C_WDAY, "—")
 local l_mday = label(P.y_mday, P.h_mday, FONT_MDAY, C_HINT, "—")
@@ -79,40 +94,49 @@ local l_hh   = label(P.y_hh, P.h_hh, FONT_BIG, C_HH, "--")
 local l_mm   = label(P.y_mm, P.h_mm, FONT_BIG, C_MM, "--")
 local l_subj = label(P.y_c_subj, P.h_c_subj, FONT_SUBJ, C_HH, "读取课表中")
 local l_stat = label(P.y_c_stat, P.h_c_stat, FONT_STAT, C_WDAY, "")
-local l_batt = label(P.y_batt, P.h_batt, FONT_BATT, C_HINT, "电量 --")
-local l_ver  = label(P.y_version, P.h_version, FONT_VER, 0x4A5160, VERSION)
+local l_next = label(P.y_c_next, P.h_c_next, FONT_NEXT, C_HINT, "")
+local l_ver  = label(P.y_version, P.h_version, FONT_VER, C_DIM, VERSION)
 
--- ---------- 分割线 + 电量条（装饰件，整体 pcall：失败只是少一根线） ----------
-local AL = nil
-pcall(function() AL = lvgl.ALIGN.TOP_LEFT end)
-local function place(o, x, y)
-    if AL then o:set { align = { type = AL, x_ofs = x, y_ofs = y } }
-    else o:set { x = x, y = y } end
-end
-
+-- ---------- 分割线 ----------
 local DIV_W, DIV_H = P.w_div, math.max(1, P.h_div)
-local BBAR_W, BBAR_H = P.w_bbar, math.max(1, P.h_bbar)
-local bar_bg, bar_fg
 pcall(function()
     local div = lvgl.Object(scr, {
         w = DIV_W, h = DIV_H, bg_color = C_DIV, bg_opa = lvgl.OPA(100),
         border_width = 0, radius = 0,
     })
     place(div, math.floor((W - DIV_W) / 2), P.y_div)
-
-    bar_bg = lvgl.Object(scr, {
-        w = BBAR_W, h = BBAR_H, bg_color = C_BARBG, bg_opa = lvgl.OPA(100),
-        border_width = 0, radius = 1,
-    })
-    place(bar_bg, math.floor((W - BBAR_W) / 2), P.y_bbar)
-    bar_fg = lvgl.Object(scr, {
-        w = 0, h = BBAR_H, bg_color = C_WDAY, bg_opa = lvgl.OPA(100),
-        border_width = 0, radius = 1,
-    })
-    place(bar_fg, math.floor((W - BBAR_W) / 2), P.y_bbar)
 end)
 
--- ---------- 电量：dataman 是硬件数据唯一通道，值按 256 倍编码 ----------
+-- ---------- 电量：macOS 口径的电池图标 + 百分比，贴在版本号那一行右侧 ----------
+-- 几何全部按屏宽推，不写死像素：图标宽 ≈ 屏宽/8，右侧留 4px，文字槽 34px。
+local ICON_W = math.max(18, math.floor(W / 8))
+local ICON_H = math.max(9, math.floor(ICON_W * 9 / 20))
+local SLOT_W = math.max(34, math.floor(W / 6))
+local PAD_R  = 4
+local pct_x  = W - PAD_R - SLOT_W
+local icon_x = pct_x - 6 - ICON_W
+local icon_y = P.y_version + math.max(0, math.floor((P.h_version - ICON_H) / 2))
+
+local l_pct = label_at(pct_x + 2, P.y_version, P.h_version, FONT_BATT, C_HINT, "--%")
+local bat_body, bat_fill, bat_nub
+pcall(function()
+    bat_body = lvgl.Object(scr, {
+        w = ICON_W - 3, h = ICON_H, bg_opa = 0,
+        border_width = 1, border_color = C_HINT, radius = 2,
+    })
+    place(bat_body, icon_x, icon_y)
+    bat_fill = lvgl.Object(scr, {
+        w = 0, h = ICON_H - 4, bg_color = C_WDAY, bg_opa = lvgl.OPA(100),
+        border_width = 0, radius = 1,
+    })
+    place(bat_fill, icon_x + 2, icon_y + 2)
+    bat_nub = lvgl.Object(scr, {
+        w = 2, h = math.max(3, ICON_H - 6), bg_color = C_HINT,
+        bg_opa = lvgl.OPA(100), border_width = 0, radius = 0,
+    })
+    place(bat_nub, icon_x + ICON_W - 3, icon_y + 3)
+end)
+
 local batt = nil
 pcall(function()
     local dataman = require("dataman")
@@ -143,23 +167,23 @@ local function refresh()
     if sig ~= sig_cache then parse_schedule(text); sig_cache = sig end
     local s = compute()
     l_subj:set { text = cut(s.subject, 6) }
-    local stat = s.status or ""
-    local extra = s.d1 or ""
-    if extra ~= "" then stat = stat .. " " .. extra end
-    if not text then stat = "请开课程表" end
-    l_stat:set { text = cut(stat, 9) }
+    l_stat:set { text = cut(s.status or "", 7) }
+    if not text then l_next:set { text = "请开课程表" }
+    elseif (s.next or "") == "" then l_next:set { text = "" }
+    else l_next:set { text = cut(s.next, 8) } end
 
     if batt then
-        l_batt:set { text = string.format("电量 %d%%", batt) }
+        l_pct:set { text = string.format("%d%%", batt) }
         pcall(function()
-            bar_fg:set { w = math.floor(BBAR_W * batt / 100) }
+            local inner = math.max(0, ICON_W - 7)
+            bat_fill:set { w = math.floor(inner * batt / 100) }
             local col = C_WDAY
             if batt <= 15 then col = 0xFF6B6B
             elseif batt <= 35 then col = 0xFFB347 end
-            bar_fg:set { bg_color = col }
+            bat_fill:set { bg_color = col }
         end)
     else
-        l_batt:set { text = "电量 --" }
+        l_pct:set { text = "--%" }
     end
 end
 
@@ -171,4 +195,4 @@ pcall(function()
 end)
 
 refresh()
-print("EV_QUARTZ_V2", W, H, VERSION, "courses=" .. course_count)
+print("EV_QUARTZ_V3", W, H, VERSION, "courses=" .. course_count)

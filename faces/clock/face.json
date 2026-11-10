@@ -15,9 +15,9 @@
     "mday": "11月11日",
     "hh": "10",
     "mm": "14",
-    "batt": "电量 82%",
     "c_subj": "语文",
-    "c_stat": "上课中 已上10分"
+    "c_stat": "上课中",
+    "c_next": "下节数学"
   },
   "rows": [
     "wday",
@@ -27,8 +27,7 @@
     "mm",
     "c_subj",
     "c_stat",
-    "batt",
-    "bbar",
+    "c_next",
     "version"
   ],
   "preview_style": {

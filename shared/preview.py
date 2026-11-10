@@ -163,6 +163,32 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
         dr.rounded_rectangle([bl, by, bl + int(bw * pct), by + bh], radius=bh // 2,
                              fill=roles.get("accent", (127, 212, 255)))
 
+    # ---- 电量角标：macOS 口径的电池图标 + 百分比，贴在版本号那一行右侧 ----
+    if vrow and style.get("battery", True):
+        pct = int(style.get("battery_pct", 82))
+        iw = max(7, w // 8)
+        ih = max(4, iw * 9 // 20)
+        pad_r = max(2, S(4))
+        slot = max(14, w // 6)
+        px = w - pad_r - slot
+        iy = vrow["y"] + max(0, (vrow.get("h", 20) - ih) // 2)
+        ix = px - 3 - iw
+        hint = roles.get("hint", (138, 147, 166))
+        dr.rounded_rectangle([ix, iy, ix + iw - 2, iy + ih], radius=2,
+                             outline=hint, width=1)
+        inner = max(1, iw - 4)
+        fw = max(0, int(inner * pct / 100))
+        if fw:
+            fcol = roles.get("accent", (127, 212, 255))
+            if pct <= 15:
+                fcol = (255, 107, 107)
+            elif pct <= 35:
+                fcol = (255, 179, 71)
+            dr.rectangle([ix + 1, iy + 2, ix + fw, iy + ih - 2], fill=fcol)
+        dr.rectangle([ix + iw - 1, iy + 2, ix + iw, iy + ih - 2], fill=hint)
+        f = _font(LAT_FONTS, fonts.get("batt", fonts.get("version", 18)))
+        dr.text((px + 2, iy + ih // 2), "%d%%" % pct, font=f, fill=hint, anchor="lm")
+
     # ---- 版本号 ----
     if vrow:
         f = _font(LAT_FONTS, fonts.get("version", 18))
