@@ -46,6 +46,7 @@
       "mm": "#FFB347",
       "wday": "#7FD4FF",
       "hint": "#8A93A6"
-    }
+    },
+    "battery": false
   }
 }

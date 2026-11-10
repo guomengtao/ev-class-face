@@ -1,8 +1,7 @@
--- EV 石英 v3 · 巨型分体时间 + 周几 / 月日 / 电量图标 / 上课信息（科目·状态·下节）
+-- EV 石英 v4 · 巨型分体时间 + 周几 / 月日 / 电量图标 / 上课信息（科目·状态·下节）
 -- 设计取向与 class 表盘刻意拉开距离：
 --   class = 信息面板（多行小字、冷青强调、课程进度条）
 --   clock = 石英挂钟（超大字重、上下分体数字、暖白/琥珀双色、细分割线、无卡片）
--- 电量按 macOS 状态栏口径：电池图标 + 百分比，不写「电量」二字，放在版本号同一行右侧。
 -- 课程表数据层由 build.py 从 shared/lua/schedule_core.lua 注入，不在此重复实现。
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
@@ -107,48 +106,6 @@ pcall(function()
     place(div, math.floor((W - DIV_W) / 2), P.y_div)
 end)
 
--- ---------- 电量：macOS 口径的电池图标 + 百分比，贴在版本号那一行右侧 ----------
--- 几何全部按屏宽推，不写死像素：图标宽 ≈ 屏宽/8，右侧留 4px，文字槽 34px。
-local ICON_W = math.max(18, math.floor(W / 8))
-local ICON_H = math.max(9, math.floor(ICON_W * 9 / 20))
-local SLOT_W = math.max(34, math.floor(W / 6))
-local PAD_R  = 4
-local pct_x  = W - PAD_R - SLOT_W
-local icon_x = pct_x - 6 - ICON_W
-local icon_y = P.y_version + math.max(0, math.floor((P.h_version - ICON_H) / 2))
-
-local l_pct = label_at(pct_x + 2, P.y_version, P.h_version, FONT_BATT, C_HINT, "--%")
-local bat_body, bat_fill, bat_nub
-pcall(function()
-    bat_body = lvgl.Object(scr, {
-        w = ICON_W - 3, h = ICON_H, bg_opa = 0,
-        border_width = 1, border_color = C_HINT, radius = 2,
-    })
-    place(bat_body, icon_x, icon_y)
-    bat_fill = lvgl.Object(scr, {
-        w = 0, h = ICON_H - 4, bg_color = C_WDAY, bg_opa = lvgl.OPA(100),
-        border_width = 0, radius = 1,
-    })
-    place(bat_fill, icon_x + 2, icon_y + 2)
-    bat_nub = lvgl.Object(scr, {
-        w = 2, h = math.max(3, ICON_H - 6), bg_color = C_HINT,
-        bg_opa = lvgl.OPA(100), border_width = 0, radius = 0,
-    })
-    place(bat_nub, icon_x + ICON_W - 3, icon_y + 3)
-end)
-
-local batt = nil
-pcall(function()
-    local dataman = require("dataman")
-    dataman.subscribe("systemStatusBattery", scr, function(v)
-        if type(v) == "number" and v > 0 and v ~= 2147483647 then
-            local pct = math.floor(v / 256 + 0.5)
-            if pct > 100 then pct = 100 end
-            batt = pct
-        end
-    end)
-end)
-
 local WD = { "周日", "周一", "周二", "周三", "周四", "周五", "周六" }
 local function two(n) return (n < 10) and ("0" .. n) or tostring(n) end
 
@@ -172,19 +129,6 @@ local function refresh()
     elseif (s.next or "") == "" then l_next:set { text = "" }
     else l_next:set { text = cut(s.next, 8) } end
 
-    if batt then
-        l_pct:set { text = string.format("%d%%", batt) }
-        pcall(function()
-            local inner = math.max(0, ICON_W - 7)
-            bat_fill:set { w = math.floor(inner * batt / 100) }
-            local col = C_WDAY
-            if batt <= 15 then col = 0xFF6B6B
-            elseif batt <= 35 then col = 0xFFB347 end
-            bat_fill:set { bg_color = col }
-        end)
-    else
-        l_pct:set { text = "--%" }
-    end
 end
 
 function ScreenStateChangedCB(pre, now, reason)
@@ -195,4 +139,4 @@ pcall(function()
 end)
 
 refresh()
-print("EV_QUARTZ_V3", W, H, VERSION, "courses=" .. course_count)
+print("EV_QUARTZ_V4", W, H, VERSION, "courses=" .. course_count)
