@@ -1,0 +1,16 @@
+{
+  "schema": "ev-face-gallery/preview-composite/1",
+  "file": "Band9-WatchDripGraph-v1.0.0.png",
+  "face": "Band9-WatchDripGraph-v1.0.0.face",
+  "size": [192, 490],
+  "deviceReal": false,
+  "kind": "asset-composite",
+  "basis": "用 .face 包内 232 张真实分层 PNG，按 lua/main.lua 写死的坐标合成：四角 arcs 弧环(step/cals/phoneBattery/bat)、time_numbers 大时间(13,140 等)、GRAPH_SETTINGS(5,165,184,125) 血糖折线图、bgNum 血糖值、天气/心率/日期。素材与布局均为包内真实内容",
+  "caveats": [
+    "运行时数值为示意值：时间 10:14、血糖 6.5、步数 6480、卡路里 0420、电量 076/084、心率 072、天气 23℃ 均由 dataman 运行时注入，图中是占位示意",
+    "血糖折线为示意趋势：真实曲线由 dataman 的 graph 数据在运行时绘制，图中折线是布局占位",
+    "该包实测 state=rejected：无 LICENSE 不可再分发（二次分发/展示有授权风险），且机型 .info 与 .fprj 冲突；仅作候选区展示，不进主列表、不发下载直链",
+    "非设备实拍：模拟器只铺模板 lua、不执行第三方包 lua，无法出真帧"
+  ],
+  "capturedAt": "2026-11-11T16:55:00+0800"
+}

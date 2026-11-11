@@ -405,9 +405,15 @@ def build(offline: bool, check: bool):
                 # 挂的是「缺资源诊断卡」而非表盘预览，绝不能混进「包内立绘」档。
                 c["previewTierLabel"] = "缺资源诊断卡（非预览）"
                 c["previewTierDesc"] = "包体错配：lua 引用 piece_bg.rle 等 15 个资源，包内 0 个（资源槽是 50 张井字棋 PNG），真机加载必失败、无真帧可截。此图为诊断说明，不是表盘画面。台账 verdict=ready 仅按 lua 槽余量判定，未校验资源完整性。"
-            elif "TempControl-Large" in c["key"]:
+            elif "TempControl" in c["key"]:
+                # TempControl(53KB 干净容器) 与 TempControl-Large(127KB 含 50 张串包井字棋图)
+                # 台账已改判「非重复」(包结构/体积不同)，但 UI 文案与布局逐字相同，故同画面重绘。
+                _lm = " · 另含 50 张串包井字棋 PNG" if "Large" in c["key"] else ""
                 c["previewTierLabel"] = "lua 布局重绘（非真帧）"
-                c["previewTierDesc"] = "按 lua 逐字还原的纯文字温度盘，与无图版 TempControl 同画面；温度数值为运行时读取、图中是示意值。该包与 TempControl 为同一 lua 的换名冗余包，50 张井字棋 PNG 系串包冗余，lua 不引用任何图片。非设备实拍。"
+                c["previewTierDesc"] = "按 lua 逐字还原的纯文字温度盘（00:00 / Band Temp / 温度 / Temperature / shutdowns / turned on），与 TempControl 系列同画面；温度数值运行时读取、图中为示意值。两包包结构不同（本包" + _lm + "）但 UI 布局逐字相同，非换名冗余。非设备实拍、非包内原图。"
+            elif "WatchDripGraph" in c["key"]:
+                c["previewTierLabel"] = "包内分层素材合成（非设备实拍）"
+                c["previewTierDesc"] = "该包是血糖趋势盘：3.88MB / 232 张分层 PNG / 完整 30.9KB lua，无整屏立绘。本图用包内真实分层素材按 lua 写死的坐标合成（四角弧环、时间、血糖折线图、天气、心率），素材与布局为真、运行时数值（时间/血糖/步数/天气）为示意值。⚠️ 该包实测 rejected：无 LICENSE 不可再分发、机型 .info 与 .fprj 冲突，仅作展示，不进主列表、不发下载直链。"
             else:
                 c["previewTierLabel"] = "包内立绘 / 自研渲染"
                 c["previewTierDesc"] = "包内自带 192×490 立绘，或按 face.json 渲染的真实布局；不含可辨认课程行"
@@ -620,7 +626,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <header class="top"><div class="inner">
   <div class="brandline"><b>EV</b> FACE GALLERY <span>· 课程表真表盘</span></div>
   <h1>EV 表盘 · 展示与下载</h1>
-  <div class="sub">已接入课程提醒、且预览图可见课程行的成品表盘。点「筛选」按机型 / 课程提醒 / 体积 / 来源许可过滤，下载直链指向 GitHub Release。</div>
+  <div class="sub">已接入课程提醒、且预览图可见课程行的成品表盘。筛选面板已默认展开，按机型 / 课程提醒 / 体积 / 来源许可过滤（可点按钮收起），下载直链指向 GitHub Release。</div>
   <div class="stats">
     <div class="stat"><span class="n" id="s-total">—</span><span class="l">台账总包数</span></div>
     <div class="stat ok"><span class="n" id="s-ok">—</span><span class="l">已达标（主列表）</span></div>
@@ -631,7 +637,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 <div class="wrap">
   <div class="toolbar">
-    <button class="btn" id="filter-toggle" aria-expanded="false" onclick="toggleFilter()">__I_FILTER__ 筛选</button>
+    <button class="btn" id="filter-toggle" aria-expanded="true" onclick="toggleFilter()">__I_FILTER__ 筛选</button>
     <div class="sortbox"><label for="sort">排序</label>
       <select id="sort" onchange="render()">
         <option value="size-asc" selected>体积从小到大</option>
@@ -642,7 +648,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     </div>
   </div>
 
-  <div class="filter-panel" id="filter-panel"></div>
+  <div class="filter-panel open" id="filter-panel"></div>
 
   <div class="legend" id="tier-legend"></div>
 

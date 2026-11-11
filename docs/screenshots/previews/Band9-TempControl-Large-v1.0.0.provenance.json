@@ -2,13 +2,16 @@
   "schema": "ev-face-gallery/preview-render/1",
   "file": "Band9-TempControl-Large-v1.0.0.png",
   "face": "Band9-TempControl-Large-v1.0.0.face",
-  "size": [192, 490],
+  "size": [
+    192,
+    490
+  ],
   "deviceReal": false,
   "kind": "layout-render",
   "basis": "按 lua 逐字还原的纯文字温度盘：00:00 / Band Temp / 温度大数字 / Temperature / shutdowns / turned on 复选框，与 lua 中的 Label 文本和 flex 竖排一致",
   "caveats": [
     "温度数值 36.5 为示意值：lua 运行时通过内存读温度（temp:getTempFloat），无固定值",
-    "50 张井字棋 PNG 为串包冗余，该 lua 不引用任何图片，画面与无图版的 Band9-TempControl-v1.0.0.face 相同",
+    "与 Band9-TempControl-v1.0.0 画面相同（UI 文案/布局逐字一致），但包结构不同：本包 126900B 含 50 张串包井字棋 PNG、TempControl 为 53172B 干净容器；台账已改判二者『非重复』，非换名冗余。本包 lua 不引用任何图片，50 张 PNG 系串包冗余",
     "非设备实拍、非包内原图"
   ],
   "capturedAt": "2026-11-11T16:20:00+0800"
