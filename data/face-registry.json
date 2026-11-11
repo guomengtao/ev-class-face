@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-11T12:39:07+0800",
+ "updatedAt": "2026-11-11T12:48:19+0800",
  "dir": "dist/Band9",
  "count": 28,
  "totalMB": 16.1,
@@ -34,13 +34,13 @@
    "reason": "无 lua 块：纯资源表盘，无法注入课程提醒",
    "nLuaBlocks": 0,
    "lua": null,
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "rejected",
+   "source": "github.com/Vadim170/miband9-minimal-analog",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A5 产物 1.09MB；纯图片表盘，不可注入"
   },
   "Band9-Class-v1.0.14.face": {
    "bytes": 126900,
@@ -94,13 +94,13 @@
    "reason": "无 lua 块：纯资源表盘，无法注入课程提醒",
    "nLuaBlocks": 0,
    "lua": null,
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "rejected",
+   "source": "github.com/Jovines/tsukimi-dango-watchfaces",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A5 产物；纯图片表盘，包内无 lua 块，不可注入课程；无 LICENSE 不再分发"
   },
   "Band9-Daymatter-v1.0.0.face": {
    "bytes": 201744,
@@ -122,7 +122,7 @@
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "A3：投喂 rc=0 但未截到「安装成功」字样；无 LICENSE，仅供自用不再分发"
+   "note": "A3 产物 197KB；投喂 rc=0 回执不完整；lua 余量仅 2B，注入须先截短"
   },
   "Band9-EXMars-v1.1.0.face": {
    "bytes": 1535838,
@@ -205,12 +205,12 @@
     "crlf": true
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/hassan-xsf/band-face-pack",
+   "license": "MIT",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A2 产物；记账工具类版式"
   },
   "Band9-FlappyBird-v1.0.0.face": {
    "bytes": 299892,
@@ -227,12 +227,12 @@
     "crlf": true
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/hassan-xsf/band-face-pack",
+   "license": "MIT",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A2 产物；游戏类版式"
   },
   "Band9-FuGuShuMa-v1.0.0.face": {
    "bytes": 164164,
@@ -242,13 +242,13 @@
    "reason": "无 lua 块：纯资源表盘，无法注入课程提醒",
    "nLuaBlocks": 0,
    "lua": null,
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "rejected",
+   "source": "github.com/Jovines/tsukimi-dango-watchfaces",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A5 产物；纯图片表盘，不可注入"
   },
   "Band9-LuaCalculator-v1.0.0.face": {
    "bytes": 53172,
@@ -264,13 +264,13 @@
     "free": 2,
     "crlf": true
    },
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "installed",
+   "source": "github.com/hassan-xsf/band-face-pack",
+   "license": "MIT",
    "screenshot": "",
    "evVersion": "",
-   "realDeviceRound": 0,
-   "note": ""
+   "realDeviceRound": 1,
+   "note": "A2 唯一装机成功（截图 OCR 回执）；轻包 52KB；lua 槽几近满，注入需截短"
   },
   "Band9-Monika-EV-v1.0.0.face": {
    "bytes": 756860,
@@ -479,12 +479,12 @@
     "crlf": true
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/hassan-xsf/band-face-pack",
+   "license": "MIT",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A2 产物；步数工具类版式"
   },
   "Band9-TempControl-Large-v1.0.0.face": {
    "bytes": 126900,
@@ -545,12 +545,12 @@
     "crlf": true
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/hassan-xsf/band-face-pack",
+   "license": "MIT",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A2 产物；游戏类版式，注入课程行需评估 UI 空间"
   },
   "Band9-TongQinYiBiao-v1.0.0.face": {
    "bytes": 203540,
@@ -560,13 +560,13 @@
    "reason": "无 lua 块：纯资源表盘，无法注入课程提醒",
    "nLuaBlocks": 0,
    "lua": null,
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "rejected",
+   "source": "github.com/Jovines/tsukimi-dango-watchfaces",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A5 产物；纯图片表盘，不可注入"
   },
   "Band9-WatchDripGraph-v1.0.0.face": {
    "bytes": 3882404,
