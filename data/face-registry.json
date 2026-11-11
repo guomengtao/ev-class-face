@@ -1,8 +1,8 @@
 {
- "updatedAt": "2026-11-11T13:02:15+0800",
+ "updatedAt": "2026-11-11T13:27:21+0800",
  "dir": "dist/Band9",
- "count": 28,
- "totalMB": 16.1,
+ "count": 30,
+ "totalMB": 17.5,
  "faces": {
   "Band9-Analog-v1.0.8.face": {
    "bytes": 126900,
@@ -294,6 +294,28 @@
    "realDeviceRound": 0,
    "note": "首版注入，course 单前置"
   },
+  "Band9-Monika-EV-v1.0.1.face": {
+   "bytes": 756860,
+   "kb": 739,
+   "magic_ok": true,
+   "verdict": "ready_shorten",
+   "reason": "余量 187B，截短可腾 ~4000B 后塞入 3703B",
+   "nLuaBlocks": 1,
+   "lua": {
+    "name": "_lua/monika/monika.lua",
+    "slot": 31789,
+    "used": 31602,
+    "free": 187,
+    "crlf": true
+   },
+   "state": "adapted",
+   "source": "",
+   "license": "",
+   "screenshot": "docs/screenshots/Band9-Monika-EV-v1.0.1-课程行-20261111.png",
+   "evVersion": "1.0.1",
+   "realDeviceRound": 0,
+   "note": "M1路A:借壳注入(不新建控件,劫持msg气泡9层描边text label+复用宿主timer,宿主改造2行);截短keep6腾3604B+EVFF核心3045B+借壳UI353B;槽余185B;luac -p/回读/等长/CRLF/5分支+2临界/全流程mock全PASS;带壳证据图Mac合成,待Leader装机抽验"
+  },
   "Band9-Monika-EV-v1.1.0.face": {
    "bytes": 756860,
    "kb": 739,
@@ -315,6 +337,28 @@
    "evVersion": "1.1.0",
    "realDeviceRound": 0,
    "note": "注入3703B/槽31789B，luac -p 通过，5分支实跑通过；已投真机"
+  },
+  "Band9-Monika-EV-v1.2.0.face": {
+   "bytes": 756968,
+   "kb": 739,
+   "magic_ok": true,
+   "verdict": "ready_shorten",
+   "reason": "余量 120B，截短可腾 ~4000B 后塞入 3703B",
+   "nLuaBlocks": 1,
+   "lua": {
+    "name": "_lua/monika/monika.lua",
+    "slot": 31895,
+    "used": 31775,
+    "free": 120,
+    "crlf": true
+   },
+   "state": "adapted",
+   "source": "",
+   "license": "",
+   "screenshot": "docs/screenshots/Band9-Monika-EV-v1.2.0-课程行-20261111.png",
+   "evVersion": "1.2.0",
+   "realDeviceRound": 0,
+   "note": "M1路B:沿用参考实现全量注入(截短71条keep5腾3815B+EVFF核心3045B+新建2Label652B);槽余118B;luac -p/回读/等长/CRLF/5分支+2临界/全流程mock全PASS;带壳证据图Mac合成(非设备实拍),待Leader装机抽验"
   },
   "Band9-Monika-v1.0.0.face": {
    "bytes": 756860,
@@ -374,13 +418,13 @@
     "free": 1,
     "crlf": false
    },
-   "state": "installed",
+   "state": "rejected",
    "source": "github.com/sf-yuzifu/Monika/releases/1.0.0",
    "license": "GPL-3.0",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 1,
-   "note": "A3 实证：安装成功（12:34 截图 OCR），sha256 0874f6ad"
+   "note": "M1判定:1.74MB图片重包;lua槽15245B/余1B/纯LF;对话文本为预渲染图片text1.bin(setChild),无运行时LVGL Label可借壳,与v1.0.x锚点不通用;按v2流程重包只做包内截图不改造。原A3安装回执保留,state改rejected仅指本阶段课程改造放弃"
   },
   "Band9-Oneline-v1.0.1.face": {
    "bytes": 53172,

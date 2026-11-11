@@ -1,0 +1,22 @@
+{
+ "schema": "manual-synthetic-frame/1",
+ "generatedAt": "2026-11-11 13:25 +0800",
+ "type": "Mac 侧合成渲染帧（包内预览底图 + 真实状态机文案 + 注入段坐标字号），非设备实拍",
+ "base": "包内 RLE 预览块解码（192x490 真立绘）← preview-v1.0.0.png",
+ "text": {
+  "l1": "上课:语文→数学",
+  "l2": "距下课25分",
+  "source": "改造包注入的 EVFF.state() 课中分支实跑",
+  "course": "周三 语文10:00-10:45 → 数学11:00-11:45, 采样 10:20"
+ },
+ "layout": {
+  "mode": "A",
+  "font": "MiSans/系统中文16px（注入 font_size=16）",
+  "position": "msg气泡 text区 x13/y26+组y366, 9层描边"
+ },
+ "frame": "/Users/Banner/Documents/guomengtao/ev/ev-class-face/docs/screenshots/Band9-Monika-EV-v1.0.1-课程行-20261111.png",
+ "skin": "/Users/Banner/.vela/sdk/skins/builtin/xiaomi_band",
+ "skinWhy": "AVD xiaomi_band 的 skin.path",
+ "deviceReal": false,
+ "note": "设备上的真实观感需 Leader 装机抽验（槽位满，本会话禁装）"
+}
