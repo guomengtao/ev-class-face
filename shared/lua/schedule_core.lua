@@ -236,3 +236,24 @@ local function compute()
     return out
 end
 
+-- @@EVFF-SPEC-BEGIN@@
+-- ===== EVFF 课程两行状态规范 v1.1（唯一权威源；改这里=所有表盘一起生效）=====
+-- 5 分支文案；所有 -EV- 开源表盘的注入段必须与此逐字对应（由 make.py 派生并校验）：
+--   ① 无课 → 今日无课     / 下节:XXX 或 EV课程表
+--   ② 课前 → 课前:XXX     / 距上课N分 或 马上上课
+--   ③ 课中 → 上课:XXX→YYY / 距下课N分 或 马上下课
+--   ④ 课间 → 课间:XXX     / 距上课N分 或 马上上课
+--   ⑤ 结束 → 今日结束     / 下节:XXX 或 好好休息
+-- 上课/下课两个时点：临界 1 分钟分别提示「马上上课」「马上下课」，其余时间显示倒计时。
+-- 手搓表盘直接调用 evff_lines()；开源表盘注入段见 /tmp/evff-course/evff_core.lua。
+local function evff_lines()
+  local s = compute() or {}
+  local function mins(x) return tonumber((x or ""):match("(%d+)")) or 0 end
+  local function nxt(x) return (x and x ~= "" and ("下节:" .. (x:gsub("^下节", "")))) or "" end
+  if s.status == "今日无课" then return "今日无课", (nxt(s.next) ~= "" and nxt(s.next) or "EV课程表") end
+  if s.status == "即将上课" then local n=mins(s.d1); return "课前:"..s.subject, (n<2 and "马上上课" or "距上课"..n.."分") end
+  if s.status == "上课中" then local n=mins(s.d2); local z=(s.next or ""):gsub("^下节",""); if z=="本节最后" or z=="" then z="末节" end; return "上课:"..s.subject.."→"..z, (n<2 and "马上下课" or "距下课"..n.."分") end
+  if s.status == "课间休息" then local n=mins(s.d1); return "课间:"..s.subject, (n<2 and "马上上课" or "距上课"..n.."分") end
+  return "今日结束", (nxt(s.next) ~= "" and nxt(s.next) or "好好休息")
+end
+-- @@EVFF-SPEC-END@@
