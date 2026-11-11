@@ -1,0 +1,19 @@
+{
+  "schema": "ev-shot/1",
+  "tool": "ev-class-face/tools/preview_emulator.sh",
+  "created": "2026-11-11T11:38:14+08:00",
+  "devices": [
+    {
+      "serial": "emulator-11000",
+      "avd": "xiaomi_band",
+      "screen": "192x490",
+      "skin": null
+    }
+  ],
+  "size": [
+    192,
+    490
+  ],
+  "sha256": "f68ba3aa80c27de55faefb1db831032877c7893eb61b39814111edd33ea0a4bd",
+  "capture_note": "诊断帧：修复前按残缺包拉起 miwear，fb0 纯白 1 色；同一 dd→pull→RGB565 链采集"
+}

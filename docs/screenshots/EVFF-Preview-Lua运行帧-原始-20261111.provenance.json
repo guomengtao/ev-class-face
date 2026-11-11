@@ -1,0 +1,18 @@
+{
+  "schema": "ev-shot/1",
+  "tool": "ev-class-face/tools/preview_emulator.sh",
+  "created": "2026-11-11T11:38:14+08:00",
+  "devices": [
+    {
+      "serial": "emulator-11000",
+      "avd": "xiaomi_band",
+      "screen": "192x490",
+      "skin": null
+    }
+  ],
+  "size": [
+    192,
+    490
+  ],
+  "sha256": "b6dec9412ade3f103f7fa02603d2934a170a3500bfb815095b4fcb1e7947ff07"
+}

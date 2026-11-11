@@ -1,0 +1,19 @@
+{
+  "schema": "ev-shot/1",
+  "tool": "ev-class-face/tools/preview_emulator.sh",
+  "created": "2026-11-11T11:38:14+08:00",
+  "devices": [
+    {
+      "serial": "emulator-11000",
+      "avd": "xiaomi_band",
+      "screen": "192x490",
+      "skin": null
+    }
+  ],
+  "size": [
+    192,
+    490
+  ],
+  "sha256": "e67ff0ad5236e8783214125d54858b99895e413a5edab492f1ee9feeda101c73",
+  "capture_note": "诊断帧：课程表快应用点亮显示层，用于证明取帧通道可用；同一 dd→pull→RGB565 链采集"
+}
