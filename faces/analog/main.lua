@@ -49,8 +49,8 @@ local C_DIM   = 0x4A4E58
 -- 盘不能太大：盘底必须给课程文字留出干净的黑底，白字压在白盘上等于消失。
 -- 84 半径时盘底到 274，课程首行 290，真机上只差 16px，缩略图上直接糊在一起。
 local CXC, CYC = 96, 186
-local R = 76                      -- 白盘半径 → y 110..262
-local TICK_R = 60                 -- 刻度中心半径（截图里刻度离盘边有一段留白）
+local R = 82                      -- 白盘半径 → y 104..268（盘再小就成贴纸了）
+local TICK_R = 71                 -- 刻度中心半径：贴着盘边，盘心留白才像表盘
 
 -- @@INCLUDE:schedule_core@@
 
@@ -84,20 +84,28 @@ local function label(y, h, font, color, text)
     return lvgl.Label(scr, p)
 end
 
--- ---------- 1. 白盘 ----------
+-- ---------- 1. 白盘（带一圈极淡描边，硬切边在真机上有锯齿感）----------
 box(CXC - R, CYC - R, R * 2, R * 2, C_DIAL, R)
+lvgl.Object(scr, {
+    w = R * 2, h = R * 2, x = CXC - R, y = CYC - R,
+    bg_opa = 0, radius = R, border_width = 1, border_color = 0xE2E2DE, pad_all = 0,
+})
 
 -- ---------- 2. 12 根刻度：全部竖条，不按角度旋转 ----------
 -- 截图里 3 点、6 点、9 点的刻度也是竖条，这正是能 1:1 复刻的原因。
+-- 12/3/6/9 四根加长加深，给盘面一点层次（不加对象，只是参数不同）。
 for h = 0, 11 do
+    local major = (h % 3 == 0)
     local rad = h * 30 * math.pi / 180
     local tx = CXC + TICK_R * math.sin(rad)
     local ty = CYC - TICK_R * math.cos(rad)
-    box(tx - 3, ty - 8, 6, 16, C_TICK, 3)
+    local tw, th = major and 8 or 6, major and 22 or 15
+    box(tx - tw / 2, ty - th / 2, tw, th, major and 0x5E5E63 or C_TICK, 3)
 end
 
 -- ---------- 3. 指针：锥形点阵 ----------
--- 从中心往外，方块逐渐变细 → 视觉上是一根锥形针（和截图一致）。
+-- 关键：每段方块必须**大于步长**，段与段重叠成实心锥形。
+-- 之前分针末端 4px 方块配 5.3px 步长，段间露缝，真机上看就是一串断点 —— 「粗糙」的主因。
 local hand_h, hand_m, hand_s = {}, {}, {}
 
 local function build(dots, n, w0, w1, len, color)
@@ -111,9 +119,10 @@ local function build(dots, n, w0, w1, len, color)
         }
     end
 end
-build(hand_h, 7, 10, 5, 40, C_HAND)       -- 时针 40px
-build(hand_m, 12, 8, 4, 64, C_HAND)       -- 分针 64px
-build(hand_s, 15, 3, 2, 70, C_SEC)        -- 秒针 70px
+-- 步长 = len/(n-1)：时针 6.7→最小块 7、分针 5.3→最小块 6、秒针 4.2→最小块 4
+build(hand_h, 8, 11, 7, 44, C_HAND)       -- 时针 44px
+build(hand_m, 14, 9, 6, 70, C_HAND)       -- 分针 70px（尖到刻度内侧）
+build(hand_s, 16, 5, 4, 62, C_SEC)        -- 秒针 62px（铺满到刻度内侧，截断的秒针像瑕疵）
 
 local function place(dots, ang)
     local rad = ang * math.pi / 180
@@ -129,15 +138,15 @@ local function place(dots, ang)
 end
 
 -- 中心橙点（截图里盘心就是一个橙点，外面压一点点黑）
-box(CXC - 6, CYC - 6, 12, 12, C_SEC, 6)
+box(CXC - 5, CYC - 5, 10, 10, C_SEC, 5)
 box(CXC - 2, CYC - 2, 4, 4, C_HAND, 2)
 
 -- ---------- 4. 课程信息（默认注入，与 class/clock 共用同一份数据层）----------
 -- 行距按「字号 + 4~6px 空气」给，三行贴在一起在 192 宽的屏上会读成一坨。
-local l_subj = label(286, 34, F(30), C_SUBJ, "读取课表中")
-local l_stat = label(322, 28, F(24), C_STAT, "")
-local l_next = label(350, 26, F(22), C_NEXT, "")
-local l_ver  = label(376, 18, F(16), C_DIM, VERSION)
+local l_subj = label(292, 34, F(30), C_SUBJ, "读取课表中")
+local l_stat = label(326, 28, F(24), C_STAT, "")
+local l_next = label(352, 26, F(22), C_NEXT, "")
+local l_ver  = label(378, 18, F(16), C_DIM, VERSION)
 
 local sig_cache = "#none"
 

@@ -31,34 +31,34 @@
     "ver_color": "#4A4E58",
     "rows_override": {
       "c_subj": {
-        "y": 286,
+        "y": 292,
         "h": 34,
         "font": "csubj"
       },
       "c_stat": {
-        "y": 322,
+        "y": 326,
         "h": 28,
         "font": "cstat"
       },
       "c_next": {
-        "y": 350,
+        "y": 352,
         "h": 26,
         "font": "cnext"
       },
       "version": {
-        "y": 376,
+        "y": 378,
         "h": 18
       }
     },
     "dial": {
       "cx": 96,
       "cy": 186,
-      "r": 76,
+      "r": 82,
       "fill": "#F7F7F5",
       "tick_color": "#8E8E93",
       "tick_w": 6,
       "tick_h": 15,
-      "tick_r": 60,
+      "tick_r": 71,
       "hh_color": "#16161A",
       "mm_color": "#16161A",
       "hub_color": "#F5A623",
