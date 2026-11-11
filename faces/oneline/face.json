@@ -1,0 +1,55 @@
+{
+  "name": "oneline",
+  "title": "EV 一行",
+  "id": "882610323",
+  "id_note": "第四款表盘（单行超大时间），与 class(882610318)/clock(882610319)/analog(882610320)/probe(882610330) 区分",
+  "name_en": "EV OneLine",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "band9"
+  ],
+  "preview_sample": {
+    "wday": "周三  11月11日",
+    "hh": "10",
+    "mm": "14",
+    "c_subj": "语文",
+    "c_stat": "上课中",
+    "c_next": "下节数学"
+  },
+  "rows": [
+    "wday",
+    "hh",
+    "mm",
+    "c_subj",
+    "c_stat",
+    "c_next",
+    "version"
+  ],
+  "preview_style": {
+    "bg": [
+      "#0B0C0F",
+      "#0B0C0F",
+      "#0B0C0F"
+    ],
+    "card": false,
+    "div_color": "#2A2F3A",
+    "ver_color": "#4A5160",
+    "roles": {
+      "hh": "#F4F6FA",
+      "mm": "#F4F6FA",
+      "wday": "#7FD4FF",
+      "c_subj": "#F4F6FA",
+      "c_stat": "#FFB347",
+      "c_next": "#8A93A6"
+    },
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      5,
+      8,
+      12
+    ]
+  },
+  "short_name": "EV OneLine"
+}
