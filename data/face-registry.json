@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-11T13:31:22+0800",
+ "updatedAt": "2026-11-11T14:39:10+0800",
  "dir": "dist/Band9",
  "count": 30,
  "totalMB": 17.5,
@@ -138,13 +138,13 @@
     "free": 1,
     "crlf": false
    },
-   "state": "candidate",
+   "state": "rejected",
    "source": "github.com/NineBomb/EXMars",
    "license": "AGPL-3.0",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "块结构非标准，需先定位 _lua/mars3/smash.lua 真实段"
+   "note": "块结构非标准，需先定位 _lua/mars3/smash.lua 真实段 | M3判定rejected: 功能正确极简注入器722B>槽683B(超39B);唯一塞得进的nofont 683B版无字号且仍>600B阈值,不可交付。证据 data/dispatch/running/evff-mod-heavy-261111/golf_limit_probe.json"
   },
   "Band9-EXMars-v2.0.0.face": {
    "bytes": 1479339,
@@ -160,13 +160,13 @@
     "free": 1,
     "crlf": false
    },
-   "state": "candidate",
+   "state": "rejected",
    "source": "github.com/NineBomb/EXMars",
    "license": "AGPL-3.0",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "同上"
+   "note": "同上 | M3判定rejected: 注入722B>槽630B(超92B),物理不可塞。"
   },
   "Band9-EXMars-v3.0.0.face": {
    "bytes": 1507249,
@@ -182,13 +182,13 @@
     "free": 1,
     "crlf": false
    },
-   "state": "candidate",
+   "state": "rejected",
    "source": "github.com/NineBomb/EXMars",
    "license": "AGPL-3.0",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "V3.0 启用二次表盘压缩，需先解压"
+   "note": "V3.0 启用二次表盘压缩，需先解压 | M3判定rejected: 注入722B>槽625B(超97B),物理不可塞;且启用二次压缩。"
   },
   "Band9-Expenses-v1.0.0.face": {
    "bytes": 154684,
@@ -632,7 +632,7 @@
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "无 LICENSE 不可再分发；且机型 .info 与 .fprj 冲突，淘汰"
+   "note": "无 LICENSE 不可再分发；且机型 .info 与 .fprj 冲突，淘汰 | M3更正: 非二次压缩——lua/main.lua为30936B纯明文(lvgl/dataman/lunajson),可定位可改;盘点误取899B image.lua是 max(free) 在 free<=1 时的选块口径bug。因无LICENSE不可再分发+.info/.fprj冲突,维持rejected。"
   }
  }
 }
