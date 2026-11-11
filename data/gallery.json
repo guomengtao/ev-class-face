@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-11-11T13:32:00+0800",
+  "updatedAt": "2026-11-11T14:05:00+0800",
   "description": "EV 表盘展示页显式映射层。主列表准入只认 verified[]（须同时满足：已注入课程提醒 + 有可见课程行的预览图取证），不由台账字段臆断。build_gallery.py 合并本文件 + data/face-registry.json + gh release 资产生成 docs/gallery/index.html。",
   "repo": "guomengtao/ev-class-face",
   "releaseBase": "https://github.com/guomengtao/ev-class-face/releases/download",
@@ -18,10 +18,63 @@
       "preview": "docs/screenshots/取证-Class-v1.0.15-包内预览图.png",
       "courseRowText": "10:14 / 上课中 / 语文 / 已上10分 / 下课35分 / 下节数学 / EV Class v1.0.15",
       "classReminderEvidence": "台账 note=已内联 schedule_core（自研 build.py）；预览图逐行可见课程提醒；GitHub Release v1.5.0 直链实测 302→200",
-      "addedAt": "2026-11-11T13:22:00+0800"
+      "addedAt": "2026-11-11T13:22:00+0800",
+      "previewTier": "embedded",
+      "previewTierNote": "图取自 .face 包内预览块（取证-Class-v1.0.15-包内预览图.png），课程行由包内原生渲染，非模拟器、非合成"
+    },
+    {
+      "registryKey": "Band9-Monika-EV-v1.0.1.face",
+      "displayName": "Monika EV v1.0.1 · A 借壳注入",
+      "model": "Band9",
+      "releaseTag": "v1.6.0",
+      "releaseFace": "monika-ev-band9-v1.0.1.face",
+      "releasePng": "monika-ev-band9-v1.0.1.png",
+      "preview": "docs/screenshots/Band9-Monika-EV-v1.0.1-课程行-20261111.png",
+      "previewTier": "synthetic",
+      "courseRowText": "08:45 / 09/22 MON / 上课:语文→数学 / 距下课25分 / 99%",
+      "classReminderEvidence": "复用包内已有气泡 Label 运行时改写课程两行（A 借壳注入，lua 槽余量 187B）；6 项硬校验 + 5 分支/2 临界 mock 全 PASS；预览图带手环外壳、逐行可见课程两行；Release v1.6.0 直链已发布。图档 provenance=synthetic（非设备实拍）。",
+      "addedAt": "2026-11-11T14:05:00+0800"
+    },
+    {
+      "registryKey": "Band9-Monika-EV-v1.2.0.face",
+      "displayName": "Monika EV v1.2.0 · B 精简注入",
+      "model": "Band9",
+      "releaseTag": "v1.6.0",
+      "releaseFace": "monika-ev-band9-v1.2.0.face",
+      "releasePng": "monika-ev-band9-v1.2.0.png",
+      "preview": "docs/screenshots/Band9-Monika-EV-v1.2.0-课程行-20261111.png",
+      "previewTier": "synthetic",
+      "courseRowText": "08:45 / 09/22 MON / 上课:语文→数学 / 距下课25分 / 99%",
+      "classReminderEvidence": "独立精简注入器（B 路线，lua 槽余量 120B）；硬校验 + mock 全 PASS；预览图带手环外壳、逐行可见课程两行；Release v1.6.0 直链已发布。图档 provenance=synthetic（非设备实拍）。",
+      "addedAt": "2026-11-11T14:05:00+0800"
     }
   ],
   "releaseCache": {
+    "v1.6.0": {
+      "publishedAt": "2026-11-11T06:02:57Z",
+      "assets": {
+        "monika-ev-band9-v1.0.1.face": {
+          "size": 756860,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.6.0/monika-ev-band9-v1.0.1.face",
+          "state": "uploaded"
+        },
+        "monika-ev-band9-v1.0.1.png": {
+          "size": 136252,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.6.0/monika-ev-band9-v1.0.1.png",
+          "state": "uploaded"
+        },
+        "monika-ev-band9-v1.2.0.face": {
+          "size": 756968,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.6.0/monika-ev-band9-v1.2.0.face",
+          "state": "uploaded"
+        },
+        "monika-ev-band9-v1.2.0.png": {
+          "size": 137002,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.6.0/monika-ev-band9-v1.2.0.png",
+          "state": "uploaded"
+        }
+      }
+    },
     "v1.5.0": {
       "publishedAt": "2026-11-11T05:22:12Z",
       "assets": {
