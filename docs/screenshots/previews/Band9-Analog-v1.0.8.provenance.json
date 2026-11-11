@@ -1,0 +1,12 @@
+{
+  "schema": "ev-face-gallery/preview-render/1",
+  "file": "Band9-Analog-v1.0.8.png",
+  "face": "Band9-Analog-v1.0.8.face",
+  "size": [192, 490],
+  "deviceReal": false,
+  "kind": "layout-render",
+  "basis": "按注入后布局重绘：白底圆形模拟表盘 + 课程两行（语文 / 上课中 / 下节数学）+ 版本行 EV White v1.0.8",
+  "why": "该包为纯资源 + 自绘 lua（50 条小图标资源，最大 3484B），包内不存在 192×490 整屏立绘；模拟器只铺模板 lua、不执行改造包 lua，故无设备实拍帧",
+  "capturedAt": "2026-11-11T15:38:00+0800",
+  "tool": "ev-class-face/tools/extract_previews.py + 布局重绘（人工核对像素与文案）"
+}

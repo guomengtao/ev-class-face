@@ -47,9 +47,37 @@
       "courseRowText": "08:45 / 09/22 MON / 上课:语文→数学 / 距下课25分 / 99%",
       "classReminderEvidence": "独立精简注入器（B 路线，lua 槽余量 120B）；硬校验 + mock 全 PASS；预览图带手环外壳、逐行可见课程两行；Release v1.6.0 直链已发布。图档 provenance=synthetic（非设备实拍）。",
       "addedAt": "2026-11-11T14:05:00+0800"
+    },
+    {
+      "registryKey": "Band9-Analog-v1.0.8.face",
+      "displayName": "EV Analog v1.0.8 · 课程提醒白盘",
+      "model": "Band9",
+      "releaseTag": "v1.7.0",
+      "releaseFace": "analog-band9-v1.0.8.face",
+      "releasePng": "analog-band9-v1.0.8.png",
+      "preview": "docs/screenshots/previews/Band9-Analog-v1.0.8.png",
+      "previewTier": "render",
+      "courseRowText": "语文 / 上课中 / 下节数学 / EV White v1.0.8",
+      "classReminderEvidence": "台账 note=已内联 schedule_core（自研 build.py），verdict=ready（lua 槽余量 5545B ≥ 注入 3703B，可直注）；预览图为按注入后布局重绘的 192×490 全屏画面，课程两行 + 版本行逐行可读；Release v1.7.0 直链已发布（.face 126900B / .png 4333B，实传校验通过）。图档 provenance=deviceReal=false（非设备实拍、非包内原图）。",
+      "addedAt": "2026-11-11T15:35:00+0800"
     }
   ],
   "releaseCache": {
+    "v1.7.0": {
+      "publishedAt": "2026-11-11T07:33:54Z",
+      "assets": {
+        "analog-band9-v1.0.8.face": {
+          "size": 126900,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.7.0/analog-band9-v1.0.8.face",
+          "state": "uploaded"
+        },
+        "analog-band9-v1.0.8.png": {
+          "size": 4333,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.7.0/analog-band9-v1.0.8.png",
+          "state": "uploaded"
+        }
+      }
+    },
     "v1.6.0": {
       "publishedAt": "2026-11-11T06:02:57Z",
       "assets": {

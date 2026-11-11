@@ -58,17 +58,19 @@ SIZE_BUCKETS = [
 TIER_LABEL = {
     "device": "模拟器真帧",
     "synthetic": "合成渲染帧",
+    "render": "自研布局渲染（含课程行）",
     "embedded": "包内预览原图（含课程行）",
     "raw": "包内预览原图（无课程行）",
 }
 TIER_DESC = {
     "device": "真跑模拟器渲染出的画面",
     "synthetic": "包内预览底图 + 注入逻辑实跑文案 + 官方皮肤外壳，非设备实拍",
+    "render": "该包无整屏立绘，按注入后 lua / face.json 的实际布局重绘的 192×490 全屏画面，课程行可见；非设备实拍、非包内原图",
     "embedded": "直接取 .face 包内预览块原图，课程行由包内原生渲染，未经模拟器、未合成",
     "raw": "包内自带预览图，只有底图、课程行没有",
 }
-# 主列表准入：只认 device / synthetic（raw 无课程行，进候选）
-TIER_QUALIFIED = {"device", "synthetic", "embedded"}
+# 主列表准入：只认 device / synthetic / render / embedded（raw 无课程行，进候选）
+TIER_QUALIFIED = {"device", "synthetic", "render", "embedded"}
 
 # 台账 verdict → 人话（候选卡上直接展示，让 Tom 一眼看出能不能捞）
 VERDICT_LABEL = {
@@ -402,35 +404,42 @@ def build(offline: bool, check: bool):
                 c["previewTierLabel"] = "包内立绘 / 自研渲染"
                 c["previewTierDesc"] = "包内自带 192×490 立绘，或按 face.json 渲染的真实布局；不含可辨认课程行"
 
-    # ── 同源版本去重：默认只显示最新版，旧版本降级为候选 ──────────────────
+    # ── 同源去重（家族级）：Monika-EV / MonikaDefault 归入 Monika，只留一张卡──
+    FAMILY_ALIAS = {
+        "Band9-Monika-EV": "Band9-Monika",
+        "Band9-MonikaDefault": "Band9-Monika",
+        "Band9-EXMars-EV": "Band9-EXMars",
+    }
+
     def _base(k):
-        return re.sub(r"-v\d[\d.]*\.face$", "", k)
+        b = re.sub(r"-v\d[\d.]*\.face$", "", k)
+        return FAMILY_ALIAS.get(b, b)
 
     def _ver(k):
         m = re.search(r"-v(\d+(?:\.\d+)*)\.face$", k)
         return tuple(int(x) for x in m.group(1).split(".")) if m else (0,)
 
+    def _rank(c):
+        """保留优先级：主列表成员 > 已注入课程提醒 > 版本号高。"""
+        f = faces.get(c["key"], {}) or {}
+        return (1 if c.get("verified") else 0, 1 if has_class_reminder(f) else 0, _ver(c["key"]))
+
     groups: dict = {}
-    for c in qualified:
+    for c in qualified + candidates:
         groups.setdefault(_base(c["key"]), []).append(c)
-    deduped_out = []
-    for base, grp in groups.items():
+    folded_keys: list[str] = []
+    for _bk, grp in groups.items():
         if len(grp) < 2:
             continue
-        grp.sort(key=lambda c: _ver(c["key"]), reverse=True)
+        grp.sort(key=_rank, reverse=True)
         keep = grp[0]
         for old in grp[1:]:
-            qualified.remove(old)
-            old["verified"] = False
-            old["missing"] = ["旧版本 · 已由 %s 取代（默认只显示最新版）" % keep["key"]]
-            old["recoverLabel"] = "旧版本 · 已折叠"
-            old["recoverLevel"] = "-"
-            old.setdefault("luaFreeLabel", "—")
-            old.setdefault("verdictLabel", "—")
-            old.setdefault("luaSlot", "—")
-            old.setdefault("state", "adapted")
-            deduped_out.append(old)
-    candidates = deduped_out + candidates
+            old["_folded"] = True
+            folded_keys.append("%s→%s" % (old["key"], keep["key"]))
+    if folded_keys:
+        qualified = [c for c in qualified if not c.get("_folded")]
+        candidates = [c for c in candidates if not c.get("_folded")]
+        log("同源折叠 %d 条（不再展示）：%s" % (len(folded_keys), "，".join(folded_keys)))
 
     cards = qualified + candidates
     models = sorted({c["model"] for c in cards}, key=lambda x: (x == "未知", x))
