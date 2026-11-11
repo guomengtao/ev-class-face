@@ -45,7 +45,7 @@ local FONT_BATT = F(P.f_batt, B.MONTSERRAT_14)
 local FONT_VER  = F(P.f_version, B.MONTSERRAT_14)
 
 -- ---------- 配色：石墨黑底 + 暖白小时 + 琥珀分钟 ----------
-local C_BG    = 0x0E0F12
+local C_BG    = 0x000000          -- 纯黑（用户 2026-11-11 定：三款表盘底色统一纯黑）
 local C_HH    = 0xFFF6E8
 local C_MM    = 0xFFB347
 local C_WDAY  = 0x7FD4FF

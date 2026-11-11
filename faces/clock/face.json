@@ -29,9 +29,9 @@
   ],
   "preview_style": {
     "bg": [
-      "#0C0D10",
-      "#191C23",
-      "#0C0D10"
+      "#000000",
+      "#000000",
+      "#000000"
     ],
     "card": false,
     "div_color": "#2A2F3A",
@@ -47,9 +47,9 @@
     "battery": false,
     "inset": 16,
     "inset_color": [
-      5,
-      8,
-      12
+      0,
+      0,
+      0
     ]
   },
   "short_name": "EV Quartz"

@@ -22,9 +22,9 @@
   ],
   "preview_style": {
     "bg": [
-      "#0A0A0C",
-      "#0D0D10",
-      "#0A0A0C"
+      "#000000",
+      "#000000",
+      "#000000"
     ],
     "card": false,
     "div_color": "#2B313C",
@@ -74,9 +74,9 @@
     "battery": false,
     "inset": 16,
     "inset_color": [
-      10,
-      10,
-      12
+      0,
+      0,
+      0
     ]
   },
   "short_name": "EV White"

@@ -6,7 +6,10 @@ local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
 
 -- ---------- 配色（轻触切换） ----------
+-- 索引 1 = 纯黑，是**默认主题**（用户 2026-11-11 定：三款表盘默认底色统一纯黑）。
+-- 注意：THEME_FILE 存的是索引，插到最前面会让老的 n=1 从「深海蓝」变成「纯黑」，属预期变更。
 local THEMES = {
+    { name = "纯黑", bg = 0x000000, time = 0xFFFFFF, accent = 0x7FD4FF, sub = 0xFFD479, hint = 0x8FB4D4 },
     { name = "深海蓝", bg = 0x0B2036, time = 0xFFFFFF, accent = 0x7FD4FF, sub = 0xFFD479, hint = 0x8FB4D4 },
     { name = "暮光紫", bg = 0x1A1030, time = 0xFFE9A8, accent = 0xD9A8FF, sub = 0x9BE8B0, hint = 0xBCA6DC },
     { name = "松林绿", bg = 0x10241C, time = 0xE8FFF0, accent = 0x8FE3B0, sub = 0xFFC98F, hint = 0x9FC4AC },
@@ -119,15 +122,23 @@ end
 local bar_bg, bar_fg
 -- 进度条属于装饰件：任何机型上 lvgl.Object 参数不被支持时都不能拖垮整个表盘，
 -- 因此创建过程整体 pcall，失败则只是少一根进度条，其余内容照常渲染。
+-- 另：普通 Object 默认 CLICKABLE=1 会**吃掉按下事件**，让系统收不到长按
+-- （症状：进度条那一条长按没反应，别处长按正常）。装饰件一律 clear CLICKABLE + 上抛。
+local function passive(o)
+    if not o then return nil end
+    pcall(function() o:clear_flag(lvgl.FLAG.CLICKABLE) end)
+    pcall(function() o:add_flag(lvgl.FLAG.EVENT_BUBBLE) end)
+    return o
+end
 pcall(function()
-    bar_bg = lvgl.Object(scr, {
+    bar_bg = passive(lvgl.Object(scr, {
         w = BAR_W, h = BAR_H, bg_color = 0x1E3A52, bg_opa = lvgl.OPA(100),
         border_width = 0, radius = 3,
-    })
-    bar_fg = lvgl.Object(scr, {
+    }))
+    bar_fg = passive(lvgl.Object(scr, {
         w = 0, h = BAR_H, bg_color = th.accent, bg_opa = lvgl.OPA(100),
         border_width = 0, radius = 3,
-    })
+    }))
     place(bar_bg, P.y_bar)
     place(bar_fg, P.y_bar)
 end)

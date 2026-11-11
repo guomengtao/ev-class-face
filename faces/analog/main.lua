@@ -35,7 +35,7 @@ local P = {
 local VERSION = "v1.0.0"
 
 -- ---------- 配色：近黑底 + 纯白盘 + 灰刻度 + 黑针 + 橙秒针（照抄截图）----------
-local C_BG    = 0x0A0A0C
+local C_BG    = 0x000000          -- 纯黑（用户 2026-11-11 定：三款表盘底色统一纯黑）
 local C_DIAL  = 0xF7F7F5
 local C_TICK  = 0x8E8E93
 local C_HAND  = 0x16161A
