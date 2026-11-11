@@ -100,9 +100,18 @@ local function time_label(y, h, font, color, text)
     return o
 end
 
+-- 日期 + 周几：替换原来无课/下课时显示的「EV课程表」（2026-11-11 用户要求）。
+-- 位置沿用课程名那行（y_subj），有课时仍是课名，占位时才显示日期；
+-- 刷新周期 60s，跨天会自动跟着变。
+local WEEK_CN = { "日", "一", "二", "三", "四", "五", "六" }
+local function date_line()
+    local t = os.date("*t", os.time())
+    return string.format("%d/%d 周%s", t.month, t.day, WEEK_CN[t.wday] or "")
+end
+
 local l_time = time_label(P.y_time, P.h_time, FONT_TIME, th.time, "--:--")
 local l_stat = label(P.y_stat, P.h_stat, FONT_STAT, th.accent, "读取课表中")
-local l_subj = label(P.y_subj, P.h_subj, FONT_SUBJ, th.time, "EV课程表")
+local l_subj = label(P.y_subj, P.h_subj, FONT_SUBJ, th.time, date_line())
 local l_d1   = label(P.y_d1, P.h_d1, FONT_BODY, th.sub, "")
 local l_d2   = label(P.y_d2, P.h_d2, FONT_BODY, th.sub, "")
 local l_next = label(P.y_next, P.h_next, FONT_BODY, th.accent, "")
@@ -156,7 +165,14 @@ local function refresh()
     local s = compute()
     l_time:set { text = s.time }
     l_stat:set { text = s.status }
-    l_subj:set { text = s.subject }
+    -- 课程名行：compute() 的「今日无课」「今日结束」两个分支不写 subject，
+    -- 它保持初值 "EV课程表"（品牌名占位）。占位一律换成日期 + 周几；
+    -- 有课的分支（即将上课/上课中/课间休息）仍然显示课名。
+    if s.subject == "" or s.subject == "EV课程表" then
+        l_subj:set { text = date_line() }
+    else
+        l_subj:set { text = s.subject }
+    end
     l_d1:set   { text = s.d1 }
     l_d2:set   { text = s.d2 }
     l_next:set { text = s.next }
