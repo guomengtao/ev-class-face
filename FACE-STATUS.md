@@ -1,6 +1,6 @@
 # 开源表盘分类台账（FACE-STATUS）
 
-> 自动生成于 2026-11-11T14:39:10+0800 · 共 **30** 个包 / **17.5MB** · 机读权威：`data/face-registry.json`
+> 自动生成于 2026-11-11T14:46:44+0800 · 共 **31** 个包 / **19.0MB** · 机读权威：`data/face-registry.json`
 
 > 本表由 `python3 tools/face_inventory.py` 刷新；`state` 列由人或 Worker 维护，扫描不会覆盖。
 
@@ -9,9 +9,8 @@
 | 判定 | 数量 | 包体积合计 | 含义 |
 |---|---|---|---|
 | ✅ 可直改 | 4 | 0.5MB | lua 槽余量够直接插 3.7KB 注入段 |
-| 🟡 截短后可改 | 17 | 7.3MB | 先截短包内提示字符串腾空间，再注入 |
-| 🔶 需解压后改 | 1 | 3.7MB | 包内二次压缩，需先定位解压后的 lua 块 |
-| 🔶 待逐个分析 | 3 | 4.3MB | 结构特殊，需逐个读代码 |
+| 🟡 截短后可改 | 18 | 11.0MB | 先截短包内提示字符串腾空间，再注入 |
+| 🔶 待逐个分析 | 4 | 5.8MB | 结构特殊，需逐个读代码 |
 | ❌ 非 Lua 表盘 | 5 | 1.7MB | 纯资源表盘，无 lua 运行逻辑，放弃 |
 
 ## 二、明细
@@ -40,10 +39,11 @@
 | 待改造 | 🟡 截短后可改 | 124 | `Band9-TicTacToe-v1.0.0.face` | `lua/main.lua` | 17287B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
 | 待改造 | ❌ 非 Lua 表盘 | 124 | `Band9-Probe-v1.0.1.face` | — | — | — | 自研 build.py / — |
 | 不合适·已淘汰 | 🟡 截短后可改 | 1740 | `Band9-MonikaDefault-v1.0.0.face` | `_lua/monika/monika.lua` | 15245B | 1B | github.com/sf-yuzifu/Monika/releases/1.0.0 / GPL-3.0 |
-| 不合适·已淘汰 | 🔶 需解压后改 | 3791 | `Band9-WatchDripGraph-v1.0.0.face` | `lua/image.lua` | 899B | 1B | github.com/miguelavh/LUA_Watchdrip_Watc… / 未声明 |
-| 不合适·已淘汰 | 🔶 待逐个分析 | 1500 | `Band9-EXMars-v1.1.0.face` | `_lua/mars3/smash.lua` | 683B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
-| 不合适·已淘汰 | 🔶 待逐个分析 | 1445 | `Band9-EXMars-v2.0.0.face` | `_lua/SmoothlyLighttop/SmoothlyLight.lua` | 630B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
-| 不合适·已淘汰 | 🔶 待逐个分析 | 1472 | `Band9-EXMars-v3.0.0.face` | `_lua/mars3/smash.lua` | 625B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
+| 不合适·已淘汰 | 🟡 截短后可改 | 3791 | `Band9-WatchDripGraph-v1.0.0.face` | `lua/main.lua` | 30936B | 1B | github.com/miguelavh/LUA_Watchdrip_Watc… / 未声明 |
+| 不合适·已淘汰 | 🔶 待逐个分析 | 1500 | `Band9-EXMars-EV-v1.1.0.face` | `_lua/SmoothlyLight/SmoothlyLight.lua` | 789B | 1B | — / — |
+| 不合适·已淘汰 | 🔶 待逐个分析 | 1500 | `Band9-EXMars-v1.1.0.face` | `_lua/SmoothlyLight/SmoothlyLight.lua` | 789B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
+| 不合适·已淘汰 | 🔶 待逐个分析 | 1445 | `Band9-EXMars-v2.0.0.face` | `_lua/SmoothlyLightmiddle/SmoothlyLight.lua` | 631B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
+| 不合适·已淘汰 | 🔶 待逐个分析 | 1472 | `Band9-EXMars-v3.0.0.face` | `_lua/SmoothlyLightmiddle/SmoothlyLight.lua` | 670B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
 | 不合适·已淘汰 | ❌ 非 Lua 表盘 | 1069 | `Band9-AnalogFull-v1.0.0.face` | — | — | — | github.com/Vadim170/miband9-minimal-analog / 未声明 |
 | 不合适·已淘汰 | ❌ 非 Lua 表盘 | 200 | `Band9-DaZiQingXi-v1.0.0.face` | — | — | — | github.com/Jovines/tsukimi-dango-watchf… / 未声明 |
 | 不合适·已淘汰 | ❌ 非 Lua 表盘 | 160 | `Band9-FuGuShuMa-v1.0.0.face` | — | — | — | github.com/Jovines/tsukimi-dango-watchf… / 未声明 |
