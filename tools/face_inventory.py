@@ -84,13 +84,13 @@ def find_lua_blocks(d):
 def grade(blocks, total):
     if not blocks:
         return "no_lua", "无 lua 块：纯资源表盘，无法注入课程提醒"
-    extra = f"（包内共 {len(blocks)} 个 lua 块，取余量最大者 `{{}}`）" if len(blocks) > 1 else ""
+    extra = f"（包内共 {len(blocks)} 个 lua 块，取 slot 最大者（修复前误取 free 最大，退化到最小块） `{{}}`）" if len(blocks) > 1 else ""
     # ① 有块余量直接够 → 可直改
     fit = [b for b in blocks if b["free"] >= INJECT_EST]
     if fit:
         return "ready", f"余量 {fit[0]['free']}B ≥ 注入 {INJECT_EST}B，可直接注入" + \
             (extra.format(fit[0]["name"]) if extra else "")
-    b = max(blocks, key=lambda x: x["free"])
+    b = max(blocks, key=lambda x: x["size"])
     free, size, used = b["free"], b["size"], b["used"]
     ex = extra.format(b["name"]) if extra else ""
     # ② 槽位本身装得下，靠截短腾空间
@@ -113,7 +113,7 @@ def scan(root):
         blocks = find_lua_blocks(d)
         verdict, why = grade(blocks, len(d))
         fit = [b for b in blocks if b["free"] >= INJECT_EST]
-        big = (fit[0] if fit else max(blocks, key=lambda x: x["free"])) if blocks else None
+        big = (fit[0] if fit else max(blocks, key=lambda x: x["size"])) if blocks else None
         rows[fn] = {
             "bytes": len(d),
             "kb": round(len(d) / 1024),
