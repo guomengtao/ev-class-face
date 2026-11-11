@@ -1,0 +1,12 @@
+{
+  "schema": "ev-face-gallery/preview-render/1",
+  "file": "Band9-Quartz-v1.0.13.png",
+  "face": "Band9-Quartz-v1.0.13.face",
+  "size": [192, 490],
+  "deviceReal": false,
+  "kind": "layout-render",
+  "basis": "\u6309\u6ce8\u5165\u540e\u5e03\u5c40\u91cd\u7ed8\uff1a\u5468\u4e09 11\u670811\u65e5 / 10:14 / \u8bed\u6587 / \u4e0a\u8bfe\u4e2d / \u4e0b\u8282\u6570\u5b66 / EV Quartz v1.0.13",
+  "why": "\u5305\u5185\u65e0 192\u00d7490 \u6574\u5c4f\u7acb\u7ed8\uff08\u5bb9\u5668\u65e0\u6587\u4ef6\u540d\u8868\uff09\uff1b\u6a21\u62df\u5668\u53ea\u94fa\u6a21\u677f lua\u3001\u4e0d\u6267\u884c\u6539\u9020\u5305 lua",
+  "capturedAt": "2026-11-11T15:56:00+0800",
+  "tool": "ev-class-face/tools/extract_previews.py + \u5e03\u5c40\u91cd\u7ed8"
+}

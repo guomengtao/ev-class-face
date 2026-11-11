@@ -60,6 +60,19 @@
       "courseRowText": "语文 / 上课中 / 下节数学 / EV White v1.0.8",
       "classReminderEvidence": "台账 note=已内联 schedule_core（自研 build.py），verdict=ready（lua 槽余量 5545B ≥ 注入 3703B，可直注）；预览图为按注入后布局重绘的 192×490 全屏画面，课程两行 + 版本行逐行可读；Release v1.7.0 直链已发布（.face 126900B / .png 4333B，实传校验通过）。图档 provenance=deviceReal=false（非设备实拍、非包内原图）。",
       "addedAt": "2026-11-11T15:35:00+0800"
+    },
+    {
+      "registryKey": "Band9-Quartz-v1.0.13.face",
+      "displayName": "EV Quartz v1.0.13 · 课程提醒竖排盘",
+      "model": "Band9",
+      "releaseTag": "v1.7.0",
+      "releaseFace": "quartz-band9-v1.0.13.face",
+      "releasePng": "quartz-band9-v1.0.13.png",
+      "preview": "docs/screenshots/previews/Band9-Quartz-v1.0.13.png",
+      "previewTier": "render",
+      "courseRowText": "周三 11月11日 / 10:14 / 语文 / 上课中 / 下节数学 / EV Quartz v1.0.13",
+      "classReminderEvidence": "台账 note=已内联 schedule_core（自研 build.py）；verdict=ready_shorten（余量不足，需截短腾槽后塞入 3703B，故未标 ready）；预览图逐行可读「语文 / 上课中 / 下节数学」；Release v1.7.0 附件 .face 53172B + .png 已上传校验。图档 provenance=deviceReal:false（按布局重绘，非设备实拍、非包内原图）。",
+      "addedAt": "2026-11-11T15:56:00+0800"
     }
   ],
   "releaseCache": {
@@ -74,6 +87,16 @@
         "analog-band9-v1.0.8.png": {
           "size": 4333,
           "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.7.0/analog-band9-v1.0.8.png",
+          "state": "uploaded"
+        },
+        "quartz-band9-v1.0.13.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.7.0/quartz-band9-v1.0.13.face",
+          "state": "uploaded"
+        },
+        "quartz-band9-v1.0.13.png": {
+          "size": 4829,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.7.0/quartz-band9-v1.0.13.png",
           "state": "uploaded"
         }
       }
