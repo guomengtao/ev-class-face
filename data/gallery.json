@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-11-11T13:32:00+0800",
+  "description": "EV 表盘展示页显式映射层。主列表准入只认 verified[]（须同时满足：已注入课程提醒 + 有可见课程行的预览图取证），不由台账字段臆断。build_gallery.py 合并本文件 + data/face-registry.json + gh release 资产生成 docs/gallery/index.html。",
+  "repo": "guomengtao/ev-class-face",
+  "releaseBase": "https://github.com/guomengtao/ev-class-face/releases/download",
+  "modelsWithData": [
+    "Band9"
+  ],
+  "verified": [
+    {
+      "registryKey": "Band9-Class-v1.0.15.face",
+      "displayName": "EV Class v1.0.15 · 上课提醒",
+      "model": "Band9",
+      "releaseTag": "v1.5.0",
+      "releaseFace": "class-band9-v1.0.15.face",
+      "releasePng": "class-band9-v1.0.15.png",
+      "preview": "docs/screenshots/取证-Class-v1.0.15-包内预览图.png",
+      "courseRowText": "10:14 / 上课中 / 语文 / 已上10分 / 下课35分 / 下节数学 / EV Class v1.0.15",
+      "classReminderEvidence": "台账 note=已内联 schedule_core（自研 build.py）；预览图逐行可见课程提醒；GitHub Release v1.5.0 直链实测 302→200",
+      "addedAt": "2026-11-11T13:22:00+0800"
+    }
+  ],
+  "releaseCache": {
+    "v1.5.0": {
+      "publishedAt": "2026-11-11T05:22:12Z",
+      "assets": {
+        "class-band9-v1.0.15.face": {
+          "size": 126900,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.5.0/class-band9-v1.0.15.face",
+          "state": "uploaded"
+        },
+        "class-band9-v1.0.15.png": {
+          "size": 18003,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.5.0/class-band9-v1.0.15.png",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.4.0": {
+      "publishedAt": "2026-11-10T20:09:40Z",
+      "assets": {
+        "class-band9-v1.0.10.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.4.0/class-band9-v1.0.10.face",
+          "state": "uploaded"
+        },
+        "class-band9-v1.0.10.png": {
+          "size": 14927,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.4.0/class-band9-v1.0.10.png",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.7.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.4.0/clock-band9-v1.0.7.face",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.7.png": {
+          "size": 11779,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.4.0/clock-band9-v1.0.7.png",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.3.0": {
+      "publishedAt": "2026-11-10T19:40:11Z",
+      "assets": {
+        "class-band9-v1.0.6.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.3.0/class-band9-v1.0.6.face",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.3.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.3.0/clock-band9-v1.0.3.face",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.3.png": {
+          "size": 9828,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.3.0/clock-band9-v1.0.3.png",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.2.0": {
+      "publishedAt": "2026-11-10T19:33:39Z",
+      "assets": {
+        "class-band9-v1.0.6.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.2.0/class-band9-v1.0.6.face",
+          "state": "uploaded"
+        },
+        "class-band9-v1.0.6.png": {
+          "size": 15323,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.2.0/class-band9-v1.0.6.png",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.2.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.2.0/clock-band9-v1.0.2.face",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.2.png": {
+          "size": 12438,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.2.0/clock-band9-v1.0.2.png",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.1.0": {
+      "publishedAt": "2026-11-10T19:29:31Z",
+      "assets": {
+        "class-band9-v1.0.6.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.1.0/class-band9-v1.0.6.face",
+          "state": "uploaded"
+        },
+        "class-band9-v1.0.6.png": {
+          "size": 15323,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.1.0/class-band9-v1.0.6.png",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.1.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.1.0/clock-band9-v1.0.1.face",
+          "state": "uploaded"
+        },
+        "clock-band9-v1.0.1.png": {
+          "size": 8940,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.1.0/clock-band9-v1.0.1.png",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.0.1": {
+      "publishedAt": "2026-11-10T18:23:05Z",
+      "assets": {
+        "EV-Class-Face-Band9-v1.0.1.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.0.1/EV-Class-Face-Band9-v1.0.1.face",
+          "state": "uploaded"
+        }
+      }
+    },
+    "v1.0.0": {
+      "publishedAt": "2026-11-10T18:02:23Z",
+      "assets": {
+        "EV-Class-Face-Band9-v1.0.0.face": {
+          "size": 53172,
+          "url": "https://github.com/guomengtao/ev-class-face/releases/download/v1.0.0/EV-Class-Face-Band9-v1.0.0.face",
+          "state": "uploaded"
+        }
+      }
+    }
+  }
+}
