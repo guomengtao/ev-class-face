@@ -1,0 +1,13 @@
+{
+  "schema": "ev-face-gallery/diagnostic-card/1",
+  "file": "Band9-Smash-v1.0.0.png",
+  "face": "Band9-Smash-v1.0.0.face",
+  "size": [192, 490],
+  "deviceReal": false,
+  "kind": "diagnostic-card",
+  "cardsIsNotAWatchfacePreview": true,
+  "basis": "缺资源诊断卡，非表盘预览、非真帧、非 lua 还原画面",
+  "finding": "lua/main.lua（17287B 槽）引用 piece_bg.rle / piece_top.rle / piece_middle.rle / piece_bottom.rle / num0~9.rle / MON.rle / charge.rle 等 15 个 .rle 资源；包内 50 个资源条目全部为井字棋 PNG（l_cpu.png / mode1.png 等），15 个引用资源一个都不存在。",
+  "consequence": "真机加载图片时必然失败，无法渲染出完整表盘，因此不存在可截的真帧。台账 verdict=ready 仅按 lua 槽余量（5710B）判定，未校验资源引用完整性，与本结论不冲突。",
+  "capturedAt": "2026-11-11T16:20:00+0800"
+}

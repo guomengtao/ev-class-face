@@ -400,6 +400,14 @@ def build(offline: bool, check: bool):
             if "EXMars" in c["key"]:
                 c["previewTierLabel"] = "包内动画单帧（灰阶）"
                 c["previewTierDesc"] = "该包预览是 L8 灰阶动画帧，取其中一帧；颜色由包内 lua 运行时着色，故为灰阶"
+            elif "Smash" in c["key"]:
+                # 该包 lua 引用的 15 个 .rle 资源包内全缺，真机必加载失败；
+                # 挂的是「缺资源诊断卡」而非表盘预览，绝不能混进「包内立绘」档。
+                c["previewTierLabel"] = "缺资源诊断卡（非预览）"
+                c["previewTierDesc"] = "包体错配：lua 引用 piece_bg.rle 等 15 个资源，包内 0 个（资源槽是 50 张井字棋 PNG），真机加载必失败、无真帧可截。此图为诊断说明，不是表盘画面。台账 verdict=ready 仅按 lua 槽余量判定，未校验资源完整性。"
+            elif "TempControl-Large" in c["key"]:
+                c["previewTierLabel"] = "lua 布局重绘（非真帧）"
+                c["previewTierDesc"] = "按 lua 逐字还原的纯文字温度盘，与无图版 TempControl 同画面；温度数值为运行时读取、图中是示意值。该包与 TempControl 为同一 lua 的换名冗余包，50 张井字棋 PNG 系串包冗余，lua 不引用任何图片。非设备实拍。"
             else:
                 c["previewTierLabel"] = "包内立绘 / 自研渲染"
                 c["previewTierDesc"] = "包内自带 192×490 立绘，或按 face.json 渲染的真实布局；不含可辨认课程行"
