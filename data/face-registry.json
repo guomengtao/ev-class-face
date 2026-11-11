@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-11T12:48:19+0800",
+ "updatedAt": "2026-11-11T13:02:15+0800",
  "dir": "dist/Band9",
  "count": 28,
  "totalMB": 16.1,
@@ -456,13 +456,13 @@
     "free": 5710,
     "crlf": false
    },
-   "state": "rejected",
-   "source": "官方 Smash Stock",
-   "license": "",
+   "state": "candidate",
+   "source": "github.com/m0tral/MiWatchLuaWatchfaces (commit 5af6e14)",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "与自研 Smash 重复，保留自研版"
+   "note": "A1 原生重建（127KB，smash 逻辑 17.3KB）；与自研 Smash 不同源（一个来自官方 .fprj 重建），此前判重有误，更正"
   },
   "Band9-Stride-v1.0.0.face": {
    "bytes": 209484,
@@ -500,13 +500,13 @@
     "free": 6546,
     "crlf": false
    },
-   "state": "rejected",
-   "source": "重复源",
-   "license": "",
+   "state": "candidate",
+   "source": "github.com/m0tral/MiWatchLuaWatchfaces (commit 5af6e14)",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": "与 TempControl 同源，保留一款"
+   "note": "A1 原生重建（127KB，lua 17.3KB + 14 张 PNG 共 15 槽），与 TempControl 非重复；此前判重有误，更正"
   },
   "Band9-TempControl-v1.0.0.face": {
    "bytes": 53172,
@@ -523,12 +523,12 @@
     "crlf": false
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/m0tral/MiWatchLuaWatchfaces (commit 5af6e14)",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A1 用 .fprj 工程明文 Lua 在 macOS 原生重建（53KB）；lua/main.lua 13.6KB；已投喂待回执；此前判『重复源』有误，更正"
   },
   "Band9-TicTacToe-v1.0.0.face": {
    "bytes": 126900,

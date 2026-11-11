@@ -1,6 +1,6 @@
 # 开源表盘分类台账（FACE-STATUS）
 
-> 自动生成于 2026-11-11T12:48:19+0800 · 共 **28** 个包 / **16.1MB** · 机读权威：`data/face-registry.json`
+> 自动生成于 2026-11-11T13:02:15+0800 · 共 **28** 个包 / **16.1MB** · 机读权威：`data/face-registry.json`
 
 > 本表由 `python3 tools/face_inventory.py` 刷新；`state` 列由人或 Worker 维护，扫描不会覆盖。
 
@@ -28,19 +28,19 @@
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.1.0.face` | `_lua/monika/monika.lua` | 31789B | 120B | gitee.com/sf-yuzifu/Monika / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Oneline-v1.0.1.face` | `lua/main.lua` | 13616B | 2896B | 自研 build.py / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Quartz-v1.0.13.face` | `lua/main.lua` | 13616B | 2229B | 自研 build.py / — |
+| 待改造 | ✅ 可直改 | 124 | `Band9-Smash-v1.0.0.face` | `lua/main.lua` | 17287B | 5710B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
+| 待改造 | ✅ 可直改 | 124 | `Band9-TempControl-Large-v1.0.0.face` | `lua/main.lua` | 17287B | 6546B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
 | 待改造 | 🟡 截短后可改 | 197 | `Band9-Daymatter-v1.0.0.face` | `_lua/daymatter/daymatter.lua` | 14369B | 2B | github.com/sf-yuzifu/Daymatter_Watchfac… / 未声明 |
 | 待改造 | 🟡 截短后可改 | 151 | `Band9-Expenses-v1.0.0.face` | `lua/main.lua` | 39168B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
 | 待改造 | 🟡 截短后可改 | 293 | `Band9-FlappyBird-v1.0.0.face` | `lua/main.lua` | 18816B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
 | 待改造 | 🟡 截短后可改 | 739 | `Band9-Monika-v1.0.0.face` | `_lua/monika/monika.lua` | 31789B | 2B | gitee.com/sf-yuzifu/Monika / — |
 | 待改造 | 🟡 截短后可改 | 205 | `Band9-Stride-v1.0.0.face` | `lua/main.lua` | 24872B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
-| 待改造 | 🟡 截短后可改 | 52 | `Band9-TempControl-v1.0.0.face` | `lua/main.lua` | 13616B | 2875B | — / — |
+| 待改造 | 🟡 截短后可改 | 52 | `Band9-TempControl-v1.0.0.face` | `lua/main.lua` | 13616B | 2875B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
 | 待改造 | 🟡 截短后可改 | 124 | `Band9-TicTacToe-v1.0.0.face` | `lua/main.lua` | 17287B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
 | 待改造 | 🔶 待逐个分析 | 1500 | `Band9-EXMars-v1.1.0.face` | `_lua/mars3/smash.lua` | 683B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
 | 待改造 | 🔶 待逐个分析 | 1445 | `Band9-EXMars-v2.0.0.face` | `_lua/SmoothlyLighttop/SmoothlyLight.lua` | 630B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
 | 待改造 | 🔶 待逐个分析 | 1472 | `Band9-EXMars-v3.0.0.face` | `_lua/mars3/smash.lua` | 625B | 1B | github.com/NineBomb/EXMars / AGPL-3.0 |
 | 待改造 | ❌ 非 Lua 表盘 | 124 | `Band9-Probe-v1.0.1.face` | — | — | — | 自研 build.py / — |
-| 不合适·已淘汰 | ✅ 可直改 | 124 | `Band9-Smash-v1.0.0.face` | `lua/main.lua` | 17287B | 5710B | 官方 Smash Stock / — |
-| 不合适·已淘汰 | ✅ 可直改 | 124 | `Band9-TempControl-Large-v1.0.0.face` | `lua/main.lua` | 17287B | 6546B | 重复源 / — |
 | 不合适·已淘汰 | 🔶 需解压后改 | 3791 | `Band9-WatchDripGraph-v1.0.0.face` | `lua/image.lua` | 899B | 1B | github.com/miguelavh/LUA_Watchdrip_Watc… / 未声明 |
 | 不合适·已淘汰 | ❌ 非 Lua 表盘 | 1069 | `Band9-AnalogFull-v1.0.0.face` | — | — | — | github.com/Vadim170/miband9-minimal-analog / 未声明 |
 | 不合适·已淘汰 | ❌ 非 Lua 表盘 | 200 | `Band9-DaZiQingXi-v1.0.0.face` | — | — | — | github.com/Jovines/tsukimi-dango-watchf… / 未声明 |
