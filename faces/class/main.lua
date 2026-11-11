@@ -5,17 +5,15 @@
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
 
--- ---------- 配色（轻触切换） ----------
--- 索引 1 = 纯黑，是**默认主题**（用户 2026-11-11 定：三款表盘默认底色统一纯黑）。
--- 注意：THEME_FILE 存的是索引，插到最前面会让老的 n=1 从「深海蓝」变成「纯黑」，属预期变更。
-local THEMES = {
-    { name = "纯黑", bg = 0x000000, time = 0xFFFFFF, accent = 0x7FD4FF, sub = 0xFFD479, hint = 0x8FB4D4 },
-    { name = "深海蓝", bg = 0x0B2036, time = 0xFFFFFF, accent = 0x7FD4FF, sub = 0xFFD479, hint = 0x8FB4D4 },
-    { name = "暮光紫", bg = 0x1A1030, time = 0xFFE9A8, accent = 0xD9A8FF, sub = 0x9BE8B0, hint = 0xBCA6DC },
-    { name = "松林绿", bg = 0x10241C, time = 0xE8FFF0, accent = 0x8FE3B0, sub = 0xFFC98F, hint = 0x9FC4AC },
-    { name = "暖霞橙", bg = 0x241414, time = 0xFFF0E8, accent = 0xFF9E8F, sub = 0xFFD98F, hint = 0xDCAFA4 },
+-- ---------- 配色：固定纯黑（2026-11-11 用户定：去掉轻触切换背景） ----------
+-- 历史沿革：早期是 4~5 套主题用 scr 的 CLICKED 事件轮换，索引存 THEME_FILE。
+-- 现已按要求删除切换能力——不读、不写主题索引，底色恒定 #000000；
+-- 前景（白字 / 青蓝点缀 / 暖橙辅助）保留不变，变的只是「底色永远不换」。
+-- 注意：删掉 CLICKED 监听后，scr 仍然是可点击对象，系统长按进切换页依旧有效。
+local th = {
+    bg = 0x000000, time = 0xFFFFFF,
+    accent = 0x7FD4FF, sub = 0xFFD479, hint = 0x8FB4D4,
 }
-local theme_idx = 1
 
 -- ---------- 字体：官方 Band9 实证的粗体 MiSans-Demibold ----------
 local B = lvgl.BUILTIN_FONT
@@ -64,7 +62,6 @@ if TA == nil then TA = 1 end
 -- @@INCLUDE:schedule_core@@
 
 -- ---------- UI：y=96..394 安全矩形区，字号全线上调 ----------
-local th = THEMES[theme_idx]
 local scr = lvgl.Object(nil, {
     w = W, h = H, x = 0, y = 0,
     bg_color = th.bg, bg_opa = lvgl.OPA(100),
@@ -147,33 +144,9 @@ local l_ver  = label(P.y_ver, P.h_small, FONT_VER, th.hint, VERSION)
 local l_info1 = label(P.y_i1, P.h_small, FONT_VER, th.hint, "未探测")
 local l_info2 = label(P.y_i2, P.h_small, FONT_VER, th.hint, "未读取")
 
-local function apply_theme()
-    th = THEMES[theme_idx]
-    scr:set { bg_color = th.bg }
-    l_time:set { text_color = th.time }
-    l_stat:set { text_color = th.accent }
-    l_subj:set { text_color = th.time }
-    l_d1:set   { text_color = th.sub }
-    l_d2:set   { text_color = th.sub }
-    l_next:set { text_color = th.accent }
-    l_info1:set { text_color = th.hint }
-    l_info2:set { text_color = th.hint }
-    l_ver:set   { text_color = th.hint }
-    pcall(function() bar_fg:set { bg_color = th.accent } end)
-end
-local function load_theme()
-    local f = io.open(THEME_FILE, "r")
-    if not f then return end
-    local n = tonumber(f:read("*a") or "")
-    f:close()
-    if n and n >= 1 and n <= #THEMES then theme_idx = n end
-end
-local function save_theme()
-    pcall(function()
-        local f = io.open(THEME_FILE, "w")
-        if f then f:write(tostring(theme_idx)); f:close() end
-    end)
-end
+-- 主题切换已移除（apply_theme / load_theme / save_theme 一并删除）：
+-- 上面创建控件时颜色就直接取自常量 th，运行时无需再刷一遍配色。
+-- 也不再触碰 THEME_FILE，避免旧存档（曾存过 2/3/4）把手环重新带回彩色底。
 
 local function refresh()
     tick = tick + 1
@@ -222,10 +195,9 @@ end
 pcall(function()
     _G.ev_class_timer = lvgl.Timer { period = 60000, cb = function() refresh() end }
 end)
-scr:onevent(lvgl.EVENT.CLICKED, function()
-    theme_idx = theme_idx % #THEMES + 1
-    apply_theme(); save_theme(); refresh()
-end)
 
-load_theme(); apply_theme(); refresh()
+-- 轻触不再切换背景（2026-11-11 用户要求：底色永远纯黑）。
+-- 这里**故意不注册** EVENT.CLICKED：scr 仍是可点击对象，系统长按进表盘切换页不受影响；
+-- 屏幕内任何位置轻触都变成无操作，不会再把底色切走。
+refresh()
 print("EV_CLASS_BAND9_V4", W, H, "rows=" .. #labels, "courses=" .. course_count, diag_a, diag_b)
