@@ -67,12 +67,25 @@ scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 -- 缺这一行，触摸事件不上抛，系统收不到长按 → 进不了表盘切换页
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
 
+-- ---------- 触摸命中：装饰对象必须「不抢按下 + 事件上抛」----------
+-- 这是 v1.0.8 之前漏掉的一半：scr 加了 EVENT_BUBBLE 只是「自己愿意上抛」，
+-- 但 lvgl 的普通 Object 默认 CLICKABLE=1，按下会被最上层那块方块吃掉，
+-- 事件根本到不了 scr → 系统收不到长按 → 只有标签区域（Label 默认不可点击，
+-- 事件穿透到 scr）能换表盘，盘面/刻度/指针上长按毫无反应。
+-- 结论：每一个纯装饰对象建完立刻 clear CLICKABLE，并顺手补 EVENT_BUBBLE。
+-- 复盘：docs/表盘预览与长按修复复盘-20261111.md §4（含验收：盘面/刻度/指针/文字四处长按）。
+local function passive(o)
+    pcall(function() o:clear_flag(lvgl.FLAG.CLICKABLE) end)
+    pcall(function() o:add_flag(lvgl.FLAG.EVENT_BUBBLE) end)
+    return o
+end
+
 local function box(x, y, w, h, color, radius)
-    return lvgl.Object(scr, {
+    return passive(lvgl.Object(scr, {
         w = w, h = h, x = math.floor(x), y = math.floor(y),
         bg_color = color, bg_opa = lvgl.OPA(100),
         radius = radius or 0, border_width = 0, pad_all = 0,
-    })
+    }))
 end
 
 local function label(y, h, font, color, text)
@@ -81,15 +94,15 @@ local function label(y, h, font, color, text)
         bg_opa = 0, border_width = 0, pad_all = 0,
     }
     if ATM then p.align = { type = ATM, x_ofs = 0, y_ofs = y } else p.x, p.y = 0, y end
-    return lvgl.Label(scr, p)
+    return passive(lvgl.Label(scr, p))
 end
 
 -- ---------- 1. 白盘（带一圈极淡描边，硬切边在真机上有锯齿感）----------
 box(CXC - R, CYC - R, R * 2, R * 2, C_DIAL, R)
-lvgl.Object(scr, {
+passive(lvgl.Object(scr, {
     w = R * 2, h = R * 2, x = CXC - R, y = CYC - R,
     bg_opa = 0, radius = R, border_width = 1, border_color = 0xE2E2DE, pad_all = 0,
-})
+}))
 
 -- ---------- 2. 12 根刻度：全部竖条，不按角度旋转 ----------
 -- 截图里 3 点、6 点、9 点的刻度也是竖条，这正是能 1:1 复刻的原因。
