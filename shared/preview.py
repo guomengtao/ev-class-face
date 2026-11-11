@@ -87,6 +87,12 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
     fonts = dict(DEFAULT_FONTS)
     fonts.update(dev.get("fonts") or {})
     rows = _visible(dev, rows_used)
+    # 布局覆盖：指针/图案类表盘的行坐标是表盘自己算的（不走 devices 的通用行），
+    # 不覆盖就会「缩略图里字在中间、真机字在底部」。
+    for k, ov in (style.get("rows_override") or {}).items():
+        base = dict(rows.get(k) or {})
+        base.update(ov)
+        rows[k] = base
     lines = sorted(((k, r["y"], r.get("h", 30)) for k, r in rows.items()
                     if k not in SKIP_ROWS), key=lambda x: x[1])
     bar_key = next((k for k in BAR_ROWS if k in rows), None)
@@ -109,6 +115,57 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
             k, a, b = (t - 0.5) / 0.5, c1, c2
         dr.line([(0, y), (w, y)],
                 fill=tuple(int(a[i] + (b[i] - a[i]) * k) for i in range(3)))
+
+    # ---- 圆盘（指针表盘）：切换页的缩略图必须看得出「这是块表」----
+    # 早前只用 rows 画文字，缩略图里空得只剩几行字，和真机完全不像。
+    # 这里把 lua 的盘面用同一套几何重画一遍：拉丝按弦长裁、刻度按 sin/cos 定位。
+    dial = style.get("dial")
+    if dial:
+        import math as _m
+        cx = int(dial.get("cx") or w // 2)
+        cy = int(dial.get("cy") or 190)
+        r = int(dial.get("r") or 84)
+        fill = _rgb(dial.get("fill"), "#14161C")
+        rim = _rgb(dial.get("rim"), "#39404C")
+        inner_line = _rgb(dial.get("inner"), "#2B313C")
+        gold = _rgb(dial.get("gold"), "#E6C79C")
+        steel = _rgb(dial.get("steel"), "#6B7280")
+        brushes = [_rgb(c, "#1E222A")
+                   for c in (dial.get("brush") or ["#1E222A", "#191C23", "#23272F"])]
+
+        dr.ellipse([cx - r - 3, cy - r - 3, cx + r + 3, cy + r + 3], fill=fill)
+        ir = r - 9
+        k = 0
+        for dy in range(-ir, ir + 1, 10):
+            half = int((ir * ir - dy * dy) ** 0.5)
+            if half > 2:
+                dr.rectangle([cx - half, cy + dy, cx + half - 1, cy + dy + 6],
+                             fill=brushes[k % len(brushes)])
+            k += 1
+        dr.ellipse([cx - r, cy - r, cx + r, cy + r], outline=rim, width=2)
+        dr.ellipse([cx - r + 5, cy - r + 5, cx + r - 5, cy + r - 5],
+                   outline=inner_line, width=1)
+        for hd in range(12):
+            rad = hd * 30 * _m.pi / 180.0
+            major = hd % 3 == 0
+            sz = 6 if major else 4
+            rr = ir - (8 if major else 6)
+            tx, ty = cx + rr * _m.sin(rad), cy - rr * _m.cos(rad)
+            dr.rectangle([tx - sz / 2, ty - sz / 2, tx + sz / 2, ty + sz / 2],
+                         fill=gold if major else steel)
+        hh_v = float(dial.get("hh", 10))
+        mm_v = float(dial.get("mm", 10))
+
+        def _tip(deg, ln):
+            rad = deg * _m.pi / 180.0
+            return (cx + ln * _m.sin(rad), cy - ln * _m.cos(rad))
+
+        dr.line([(cx, cy), _tip((hh_v % 12) * 30 + mm_v * 0.5, 36)],
+                fill=_rgb(dial.get("hh_color"), "#F0E4D0"), width=7)
+        dr.line([(cx, cy), _tip(mm_v * 6, 65)],
+                fill=_rgb(dial.get("mm_color"), "#FFD9A0"), width=5)
+        dr.ellipse([cx - 9, cy - 9, cx + 9, cy + 9], fill=(0x2A, 0x2F, 0x3A))
+        dr.ellipse([cx - 4, cy - 4, cx + 4, cy + 4], fill=gold)
 
     # ---- 卡片：默认开，石英这类无卡片风格在 face.json 里关掉 ----
     if style.get("card", True):
