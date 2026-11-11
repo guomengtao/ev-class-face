@@ -70,3 +70,34 @@ def decode(body, blksize=3):
                 break
             px += blk * c
     return bytes(px)
+
+
+def pad_to(body, plen, blksize=3):
+    """把 RLE 流用**合法指令**填满到 plen 字节，不要裸 0x00 填充。
+
+    官方 Band9 包的预览块是填满的（Calculator 39208/39208、TicTacToe 52996/52996），
+    我们原来在数据结束后用 0x00 补齐，与官方结构不一致；设备解码器若按 plen 硬解，
+    0x00 会被当成 RLE 控制字节（语义依固件而定），有污染画面的风险。
+
+    填充用“重复某像素”块：ctrl(n<0x80) + 3 字节 RGB = 4 字节，解出 n 个像素。
+    为精确凑满，必要时先放一个非重复块（1 + 3n 字节），余下用 4 字节块。
+    """
+    pad = plen - len(body)
+    if pad <= 0:
+        return bytes(body)
+    rest = pad % 4
+    out = bytearray(body)
+    if rest:
+        n = {1: 4, 2: 3, 3: 2}[rest]        # 使 1+3n ≡ rest (mod 4)
+        out.append(0x80 | n)
+        out += b"\x00" * (n * blksize)
+        pad -= 1 + n * blksize
+    run = 127                                 # 每个块最多 127 次重复
+    while pad >= 4:
+        out.append(run)
+        out += b"\x00" * blksize
+        pad -= 4
+    if pad:
+        out += b"\x00" * pad
+    assert len(out) == plen, (len(out), plen)
+    return bytes(out)

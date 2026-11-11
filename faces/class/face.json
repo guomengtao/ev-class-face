@@ -38,7 +38,13 @@
     "bar_bg": "#1E3A52",
     "bar_pct": 0.35,
     "ver_color": "#7A9EBE",
-    "battery": false
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      5,
+      12,
+      22
+    ]
   },
   "short_name": "EV Class"
 }

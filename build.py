@@ -164,6 +164,8 @@ def main():
     ap.add_argument("--no-preview", action="store_true", help="保留基底预览图，只注入 Lua")
     ap.add_argument("--preview-only", action="store_true", help="只生成缩略图，不出包")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--base", default=None,
+                    help="覆盖基底文件名（faces/<face>/base/ 下）：band9.face=13616B，band9-large.face=17287B")
     args = ap.parse_args()
 
     fdir = HERE / "faces" / args.face
@@ -199,7 +201,7 @@ def main():
     if args.preview_only:
         return 0
 
-    base_name = dev.get("base")
+    base_name = args.base or dev.get("base")
     if not base_name:
         raise SystemExit(f"机型 {args.device} 未提供官方基底 .face：{dev.get('base_note', '')}")
 
@@ -229,11 +231,18 @@ def main():
         px = bytearray()
         for (r_, g_, b_) in Image.open(png).convert("RGB").getdata():
             px += bytes((r_, g_, b_))
-        body = rle.encode(px, blksize=3)
-        decoded = rle.decode(body, 3)
+        raw = rle.encode(px, blksize=3)
+        decoded = rle.decode(raw, 3)
         assert decoded == bytes(px), "RLE 解码自校验失败"
+        # 与官方包对齐：官方预览块是「填满」的（数据长度正好等于 plen），
+        # 我们原来数据结束后用 0x00 补齐 1.7 万字节，结构上与官方不一致。
+        # 改成用合法重复块填满，解码结果不变（多出的黑像素在 94080 之后，被裁掉）。
+        cap_body = plen - len(hdr)          # plen 是预览区总容量（含 8B 头）
+        body = rle.pad_to(raw, cap_body, 3)
+        assert len(body) == cap_body
         img.inject_preview(hdr + body)
-        print(f"  预览 RGB888 blksize=3  body={len(body)}B  解码还原 {len(decoded)}B ✓")
+        print(f"  预览 RGB888 blksize=3  数据={len(raw)}B 填充后={len(body)}B/上限{cap_body}B  "
+              f"解码还原 {len(decoded)}B ✓")
 
     out = Path(args.out) if args.out else HERE / "dist" / ("%s-%s-%s.face" % (args.face, args.device, ver))
     size = img.save(out)

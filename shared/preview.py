@@ -208,5 +208,18 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
         base = Image.new("RGB", (w, h), dark)
         im = Image.composite(im, base, mask)
 
+    # ---- 四周留深色边（inset）----
+    # 跑道屏/圆角屏会把满幅亮色图裁成一块大圆；clock 近黑底看不出来，class 亮蓝底特别明显。
+    # 正确做法不是压暗四角（vignette 的圆角半径算不准），而是把整幅四周涂成深色，
+    # 让亮色区域远离边缘 —— 任何遮罩下读到的都是「深色边框 + 中间内容」。
+    ins = style.get("inset")
+    if ins:
+        ins = int(ins)
+        edge = style.get("inset_color") or [0x05, 0x08, 0x0C]
+        dr.rectangle([0, 0, w - 1, ins - 1], fill=tuple(edge))
+        dr.rectangle([0, h - ins, w - 1, h - 1], fill=tuple(edge))
+        dr.rectangle([0, 0, ins - 1, h - 1], fill=tuple(edge))
+        dr.rectangle([w - ins, 0, w - 1, h - 1], fill=tuple(edge))
+
     im.save(path)
     return im

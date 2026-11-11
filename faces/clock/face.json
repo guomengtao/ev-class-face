@@ -44,7 +44,13 @@
       "wday": "#7FD4FF",
       "hint": "#8A93A6"
     },
-    "battery": false
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      5,
+      8,
+      12
+    ]
   },
   "short_name": "EV Quartz"
 }
