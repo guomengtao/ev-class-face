@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-11T12:34:58+0800",
+ "updatedAt": "2026-11-11T12:39:07+0800",
  "dir": "dist/Band9",
  "count": 28,
  "totalMB": 16.1,
@@ -117,12 +117,12 @@
     "crlf": true
    },
    "state": "candidate",
-   "source": "",
-   "license": "",
+   "source": "github.com/sf-yuzifu/Daymatter_Watchface_AstroBox_Release",
+   "license": "未声明",
    "screenshot": "",
    "evVersion": "",
    "realDeviceRound": 0,
-   "note": ""
+   "note": "A3：投喂 rc=0 但未截到「安装成功」字样；无 LICENSE，仅供自用不再分发"
   },
   "Band9-EXMars-v1.1.0.face": {
    "bytes": 1535838,
@@ -352,13 +352,13 @@
     "free": 2,
     "crlf": true
    },
-   "state": "candidate",
-   "source": "gitee.com/sf-yuzifu/Monika",
-   "license": "",
+   "state": "installed",
+   "source": "github.com/sf-yuzifu/Monika/releases/v1.2.0",
+   "license": "GPL-3.0",
    "screenshot": "",
    "evVersion": "",
-   "realDeviceRound": 0,
-   "note": ""
+   "realDeviceRound": 1,
+   "note": "A3 实证：安装成功（11:43 截图 OCR），sha256 ed8074d0"
   },
   "Band9-MonikaDefault-v1.0.0.face": {
    "bytes": 1781840,
@@ -374,13 +374,13 @@
     "free": 1,
     "crlf": false
    },
-   "state": "candidate",
-   "source": "",
-   "license": "",
+   "state": "installed",
+   "source": "github.com/sf-yuzifu/Monika/releases/1.0.0",
+   "license": "GPL-3.0",
    "screenshot": "",
    "evVersion": "",
-   "realDeviceRound": 0,
-   "note": ""
+   "realDeviceRound": 1,
+   "note": "A3 实证：安装成功（12:34 截图 OCR），sha256 0874f6ad"
   },
   "Band9-Oneline-v1.0.1.face": {
    "bytes": 53172,
