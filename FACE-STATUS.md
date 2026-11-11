@@ -1,6 +1,6 @@
 # 开源表盘分类台账（FACE-STATUS）
 
-> 自动生成于 2026-11-11T13:27:21+0800 · 共 **30** 个包 / **17.5MB** · 机读权威：`data/face-registry.json`
+> 自动生成于 2026-11-11T13:31:22+0800 · 共 **30** 个包 / **17.5MB** · 机读权威：`data/face-registry.json`
 
 > 本表由 `python3 tools/face_inventory.py` 刷新；`state` 列由人或 Worker 维护，扫描不会覆盖。
 
@@ -24,9 +24,9 @@
 | 已接入课程提醒 | ✅ 可直改 | 124 | `Band9-Class-v1.0.14.face` | `lua/main.lua` | 17287B | 3717B | 自研 build.py / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 124 | `Band9-Class-v1.0.15.face` | `lua/main.lua` | 17287B | 2780B | 自研 build.py / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.0.0.face` | `_lua/monika/monika.lua` | 31789B | 396B | gitee.com/sf-yuzifu/Monika / — |
-| 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.0.1.face` | `_lua/monika/monika.lua` | 31789B | 187B | — / — |
+| 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.0.1.face` | `_lua/monika/monika.lua` | 31789B | 187B | github.com/sf-yuzifu/Monika v1.0.0 + A … / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.1.0.face` | `_lua/monika/monika.lua` | 31789B | 120B | gitee.com/sf-yuzifu/Monika / — |
-| 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.2.0.face` | `_lua/monika/monika.lua` | 31895B | 120B | — / — |
+| 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.2.0.face` | `_lua/monika/monika.lua` | 31895B | 120B | github.com/sf-yuzifu/Monika v1.2.0 + B … / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Oneline-v1.0.1.face` | `lua/main.lua` | 13616B | 2896B | 自研 build.py / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Quartz-v1.0.13.face` | `lua/main.lua` | 13616B | 2229B | 自研 build.py / — |
 | 待改造 | ✅ 可直改 | 124 | `Band9-Smash-v1.0.0.face` | `lua/main.lua` | 17287B | 5710B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
