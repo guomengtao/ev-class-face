@@ -1,0 +1,124 @@
+{
+  "name": "s4",
+  "label": "小米手表 S4（466x466 圆屏）",
+  "device_type": 0,
+  "screen": [
+    466,
+    466
+  ],
+  "safe_area": {
+    "top": 58,
+    "bottom": 424
+  },
+  "content_width": 300,
+  "base": "band9.face",
+  "base_note": "试造基底：复用 Band9 的 lua 容器（魔数 5aa53412 / 单资源槽），仅注入 466 布局的 lua。S4 与 Band9 同属 NuttX + Lua 引擎（m0tral/MiWatchLuaWatchfaces README 明列 S4/S4 Sport/S5），容器结构一致，风险在预览块尺寸字段。正式版应替换为 S4 官方基底。",
+  "fonts": {
+    "time": 76,
+    "subject": 40,
+    "status": 30,
+    "body": 28,
+    "info": 26,
+    "version": 13,
+    "wday": 26,
+    "mday": 26,
+    "big": 88,
+    "batt": 18,
+    "csubj": 34,
+    "cstat": 24,
+    "cnext": 26
+  },
+  "rows": {
+    "time": {
+      "y": 30,
+      "h": 80,
+      "role": "time"
+    },
+    "status": {
+      "y": 120,
+      "h": 34
+    },
+    "bar": {
+      "y": 168,
+      "w": 230,
+      "h": 6
+    },
+    "subject": {
+      "y": 184,
+      "h": 50
+    },
+    "d1": {
+      "y": 248,
+      "h": 32,
+      "role": "sub"
+    },
+    "d2": {
+      "y": 290,
+      "h": 32,
+      "role": "sub"
+    },
+    "next": {
+      "y": 336,
+      "h": 32,
+      "role": "accent"
+    },
+    "version": {
+      "y": 428,
+      "h": 20
+    },
+    "info1": {
+      "y": -100,
+      "h": 24
+    },
+    "info2": {
+      "y": -120,
+      "h": 24
+    },
+    "wday": {
+      "y": 62,
+      "h": 32,
+      "font": "wday",
+      "role": "accent"
+    },
+    "mday": {
+      "y": 94,
+      "h": 32,
+      "font": "mday"
+    },
+    "div": {
+      "y": -100,
+      "w": 0,
+      "h": 2
+    },
+    "hh": {
+      "y": 130,
+      "h": 96,
+      "font": "big",
+      "role": "hh"
+    },
+    "mm": {
+      "y": 220,
+      "h": 96,
+      "font": "big",
+      "role": "mm"
+    },
+    "c_subj": {
+      "y": 320,
+      "h": 44,
+      "font": "csubj",
+      "role": "time"
+    },
+    "c_stat": {
+      "y": 358,
+      "h": 32,
+      "font": "cstat",
+      "role": "accent"
+    },
+    "c_next": {
+      "y": 386,
+      "h": 34,
+      "font": "cnext",
+      "role": "hint"
+    }
+  }
+}

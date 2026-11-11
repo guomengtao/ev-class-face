@@ -1,0 +1,55 @@
+{
+  "name": "quartz-round",
+  "title": "EV 石英",
+  "id": "882610332",
+  "id_note": "设备识别同款表盘的主键，正式发布后永久固定；跨机型共用同一 ID。与 class(882610318) 必须不同",
+  "name_en": "EV Quartz R",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "s4"
+  ],
+  "preview_sample": {
+    "wday": "周三  11月11日",
+    "hh": "10",
+    "mm": "14",
+    "c_subj": "语文",
+    "c_stat": "上课中",
+    "c_next": "下节数学"
+  },
+  "rows": [
+    "wday",
+    "hh",
+    "mm",
+    "c_subj",
+    "c_stat",
+    "c_next",
+    "version"
+  ],
+  "preview_style": {
+    "bg": [
+      "#000000",
+      "#000000",
+      "#000000"
+    ],
+    "card": false,
+    "div_color": "#2A2F3A",
+    "bar_bg": "#232833",
+    "bar_pct": 0.82,
+    "ver_color": "#4A5160",
+    "roles": {
+      "hh": "#FFF6E8",
+      "mm": "#FFB347",
+      "wday": "#7FD4FF",
+      "hint": "#8A93A6"
+    },
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      0,
+      0,
+      0
+    ]
+  },
+  "short_name": "EV Quartz"
+}

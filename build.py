@@ -163,6 +163,8 @@ def main():
     ap.add_argument("--no-bump", action="store_true", help="不改版本号（同版本出多机型时用）")
     ap.add_argument("--no-preview", action="store_true", help="保留基底预览图，只注入 Lua")
     ap.add_argument("--preview-only", action="store_true", help="只生成缩略图，不出包")
+    ap.add_argument("--allow-preview-mismatch", action="store_true",
+                    help="基底预览尺寸与机型屏幕不一致时继续（跨机型试造用，预览块保持基底原样）")
     ap.add_argument("--out", default=None)
     ap.add_argument("--base", default=None,
                     help="覆盖基底文件名（faces/<face>/base/ 下）：band9.face=13616B，band9-large.face=17287B")
@@ -196,7 +198,7 @@ def main():
     print(f"[{args.face}] {dev['label']}  {w}x{h}  版本 {old_ver} -> {ver}")
     print(f"  profile 注入: {dev['name']}  safe={dev['safe_area']['top']}..{dev['safe_area']['bottom']}"
           f"  字号={list(dev['fonts'].values())}")
-    print(f"  缩略图 -> {png.relative_to(HERE)}")
+    print(f"  缩略图 -> {png.name}")
 
     if args.preview_only:
         return 0
@@ -210,7 +212,7 @@ def main():
     hdr = img.preview_header()
     assert hdr[:4] == bytes.fromhex("e021a55a"), "基底预览 RLE magic 异常"
     assert hdr[4] & 0x0f == 3, f"基底预览 blksize 不是 3: {hdr.hex()}"
-    if (pw, ph) != (w, h):
+    if (pw, ph) != (w, h) and not args.allow_preview_mismatch:
         raise SystemExit(f"基底预览 {pw}x{ph} 与机型屏幕 {w}x{h} 不一致，选错了基底？")
 
     img.set_identity(fmeta["id"], fmeta["name_en"])
@@ -250,7 +252,7 @@ def main():
     out = Path(args.out) if args.out else HERE / "dist" / ("%s-%s-%s.face" % (args.face, args.device, ver))
     size = img.save(out)
     info = img.info()
-    print(f"  -> {out.relative_to(HERE)}  {size}B  md5={hashlib.md5(out.read_bytes()).hexdigest()[:8]}")
+    print(f"  -> {out.name}  {size}B  md5={hashlib.md5(out.read_bytes()).hexdigest()[:8]}")
     print(f"     id={info['id']}  name={info['name']}  slotCount={info['slot_count']}  bytes[5]={info['patch_flag']}")
     return 0
 
