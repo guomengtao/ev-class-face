@@ -1,0 +1,41 @@
+{
+  "name": "probe",
+  "title": "EV 能力探测",
+  "id": "882610330",
+  "id_note": "内部工具表盘，用于实测 lua 沙盒 API；id 取 330 段，与正式表盘(318/319)和规划中的 320-322 均不冲突",
+  "name_en": "EV Probe",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "band9"
+  ],
+  "preview_sample": {
+    "wday": "能力探测",
+    "version": "EV Probe"
+  },
+  "rows": [
+    "wday",
+    "version"
+  ],
+  "preview_style": {
+    "bg": [
+      "#08090C",
+      "#161A22",
+      "#08090C"
+    ],
+    "card": false,
+    "div_color": "#2A2F3A",
+    "ver_color": "#5A6274",
+    "roles": {
+      "wday": "#E8EDF5"
+    },
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      8,
+      9,
+      12
+    ]
+  },
+  "short_name": "EV Probe"
+}

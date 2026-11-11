@@ -1,0 +1,83 @@
+{
+  "name": "analog",
+  "title": "EV 白盘",
+  "id": "882610320",
+  "id_note": "第三款表盘（白盘指针），与 class(882610318) / clock(882610319) 区分；预留 321 photo、322 anim",
+  "name_en": "EV White",
+  "lua": "main.lua",
+  "version": "version.json",
+  "devices": [
+    "band9"
+  ],
+  "preview_sample": {
+    "c_subj": "语文",
+    "c_stat": "上课中",
+    "c_next": "下节数学"
+  },
+  "rows": [
+    "c_subj",
+    "c_stat",
+    "c_next",
+    "version"
+  ],
+  "preview_style": {
+    "bg": [
+      "#0A0A0C",
+      "#0D0D10",
+      "#0A0A0C"
+    ],
+    "card": false,
+    "div_color": "#2B313C",
+    "ver_color": "#4A4E58",
+    "rows_override": {
+      "c_subj": {
+        "y": 286,
+        "h": 34,
+        "font": "csubj"
+      },
+      "c_stat": {
+        "y": 322,
+        "h": 28,
+        "font": "cstat"
+      },
+      "c_next": {
+        "y": 350,
+        "h": 26,
+        "font": "cnext"
+      },
+      "version": {
+        "y": 376,
+        "h": 18
+      }
+    },
+    "dial": {
+      "cx": 96,
+      "cy": 186,
+      "r": 76,
+      "fill": "#F7F7F5",
+      "tick_color": "#8E8E93",
+      "tick_w": 6,
+      "tick_h": 15,
+      "tick_r": 60,
+      "hh_color": "#16161A",
+      "mm_color": "#16161A",
+      "hub_color": "#F5A623",
+      "hh": 8,
+      "mm": 26,
+      "sec": 42
+    },
+    "roles": {
+      "c_subj": "#F7F7F5",
+      "c_stat": "#F5A623",
+      "c_next": "#9AA0AC"
+    },
+    "battery": false,
+    "inset": 16,
+    "inset_color": [
+      10,
+      10,
+      12
+    ]
+  },
+  "short_name": "EV White"
+}

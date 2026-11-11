@@ -126,33 +126,39 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
         cy = int(dial.get("cy") or 190)
         r = int(dial.get("r") or 84)
         fill = _rgb(dial.get("fill"), "#14161C")
-        rim = _rgb(dial.get("rim"), "#39404C")
-        inner_line = _rgb(dial.get("inner"), "#2B313C")
-        gold = _rgb(dial.get("gold"), "#E6C79C")
-        steel = _rgb(dial.get("steel"), "#6B7280")
-        brushes = [_rgb(c, "#1E222A")
-                   for c in (dial.get("brush") or ["#1E222A", "#191C23", "#23272F"])]
 
         dr.ellipse([cx - r - 3, cy - r - 3, cx + r + 3, cy + r + 3], fill=fill)
-        ir = r - 9
-        k = 0
-        for dy in range(-ir, ir + 1, 10):
-            half = int((ir * ir - dy * dy) ** 0.5)
-            if half > 2:
-                dr.rectangle([cx - half, cy + dy, cx + half - 1, cy + dy + 6],
-                             fill=brushes[k % len(brushes)])
-            k += 1
-        dr.ellipse([cx - r, cy - r, cx + r, cy + r], outline=rim, width=2)
-        dr.ellipse([cx - r + 5, cy - r + 5, cx + r - 5, cy + r - 5],
-                   outline=inner_line, width=1)
+
+        # 拉丝（指针表盘不需要，白盘类不传 brush 就跳过）
+        brushes = dial.get("brush")
+        if brushes:
+            bl = [_rgb(c, "#1E222A") for c in brushes]
+            ir = r - 9
+            k = 0
+            for dy in range(-ir, ir + 1, 10):
+                half = int((ir * ir - dy * dy) ** 0.5)
+                if half > 2:
+                    dr.rectangle([cx - half, cy + dy, cx + half - 1, cy + dy + 6],
+                                 fill=bl[k % len(bl)])
+                k += 1
+        if dial.get("rim"):
+            dr.ellipse([cx - r, cy - r, cx + r, cy + r],
+                       outline=_rgb(dial["rim"], "#39404C"), width=2)
+        if dial.get("inner"):
+            dr.ellipse([cx - r + 5, cy - r + 5, cx + r - 5, cy + r - 5],
+                       outline=_rgb(dial["inner"], "#2B313C"), width=1)
+
+        # 刻度：一律竖条（截图里那款极简白盘的刻度不随角度旋转）
+        tick_c = _rgb(dial.get("tick_color"), "#8E8E93")
+        tw = int(dial.get("tick_w") or 6)
+        th = int(dial.get("tick_h") or 16)
+        tr = int(dial.get("tick_r") or (r - 17))
         for hd in range(12):
             rad = hd * 30 * _m.pi / 180.0
-            major = hd % 3 == 0
-            sz = 6 if major else 4
-            rr = ir - (8 if major else 6)
-            tx, ty = cx + rr * _m.sin(rad), cy - rr * _m.cos(rad)
-            dr.rectangle([tx - sz / 2, ty - sz / 2, tx + sz / 2, ty + sz / 2],
-                         fill=gold if major else steel)
+            tx, ty = cx + tr * _m.sin(rad), cy - tr * _m.cos(rad)
+            dr.rounded_rectangle([tx - tw / 2, ty - th / 2, tx + tw / 2, ty + th / 2],
+                                 radius=3, fill=tick_c)
+
         hh_v = float(dial.get("hh", 10))
         mm_v = float(dial.get("mm", 10))
 
@@ -160,12 +166,16 @@ def render(dev, ver, path, sample=None, style=None, rows_used=None):
             rad = deg * _m.pi / 180.0
             return (cx + ln * _m.sin(rad), cy - ln * _m.cos(rad))
 
-        dr.line([(cx, cy), _tip((hh_v % 12) * 30 + mm_v * 0.5, 36)],
-                fill=_rgb(dial.get("hh_color"), "#F0E4D0"), width=7)
-        dr.line([(cx, cy), _tip(mm_v * 6, 65)],
-                fill=_rgb(dial.get("mm_color"), "#FFD9A0"), width=5)
-        dr.ellipse([cx - 9, cy - 9, cx + 9, cy + 9], fill=(0x2A, 0x2F, 0x3A))
-        dr.ellipse([cx - 4, cy - 4, cx + 4, cy + 4], fill=gold)
+        dr.line([(cx, cy), _tip((hh_v % 12) * 30 + mm_v * 0.5, 40)],
+                fill=_rgb(dial.get("hh_color"), "#16161A"), width=9)
+        dr.line([(cx, cy), _tip(mm_v * 6, 64)],
+                fill=_rgb(dial.get("mm_color"), "#16161A"), width=7)
+        sec_v = dial.get("sec")
+        if sec_v is not None:
+            dr.line([(cx, cy), _tip(float(sec_v) * 6, tr + 5)],
+                    fill=_rgb(dial.get("sec_color"), "#F5A623"), width=2)
+        dr.ellipse([cx - 5, cy - 5, cx + 5, cy + 5],
+                   fill=_rgb(dial.get("hub_color"), "#F5A623"))
 
     # ---- 卡片：默认开，石英这类无卡片风格在 face.json 里关掉 ----
     if style.get("card", True):
