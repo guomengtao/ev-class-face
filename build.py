@@ -234,15 +234,18 @@ def main():
         raw = rle.encode(px, blksize=3)
         decoded = rle.decode(raw, 3)
         assert decoded == bytes(px), "RLE 解码自校验失败"
-        # 与官方包对齐：官方预览块是「填满」的（数据长度正好等于 plen），
-        # 我们原来数据结束后用 0x00 补齐 1.7 万字节，结构上与官方不一致。
-        # 改成用合法重复块填满，解码结果不变（多出的黑像素在 94080 之后，被裁掉）。
+        # 预览块必须「稠密且恰好」：解出像素数 == w*h，且流吃满槽位。
+        # 旧 pad_to() 往里塞重复指令，每 4B 多解出 127 个假像素（实测 3.66~14.8 倍），
+        # 设备解码溢出后退化成占位图形 —— 长按切换页「一个大圈」的根因。
         cap_body = plen - len(hdr)          # plen 是预览区总容量（含 8B 头）
-        body = rle.pad_to(raw, cap_body, 3)
-        assert len(body) == cap_body
+        body = rle.encode_exact(px, cap_body, 3)
+        npix, used = rle.decode_px_count(body, 3)
+        assert len(body) == cap_body and used == cap_body, (len(body), used, cap_body)
+        assert npix == w * h, ("预览像素数必须正好等于屏幕像素", npix, w * h)
+        assert rle.decode(body, 3) == bytes(px), "稠密封装后解码与原图不一致"
         img.inject_preview(hdr + body)
-        print(f"  预览 RGB888 blksize=3  数据={len(raw)}B 填充后={len(body)}B/上限{cap_body}B  "
-              f"解码还原 {len(decoded)}B ✓")
+        print(f"  预览 RGB888 blksize=3  原流={len(raw)}B → 稠密封装={len(body)}B/上限{cap_body}B  "
+              f"解码 {npix}px={w}x{h} ✓ 零剩余字节")
 
     out = Path(args.out) if args.out else HERE / "dist" / ("%s-%s-%s.face" % (args.face, args.device, ver))
     size = img.save(out)
