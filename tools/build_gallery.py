@@ -388,6 +388,50 @@ def build(offline: bool, check: bool):
             "updatedLabel": "台账刷新",
         })
 
+    # ── 候选区补图：包内立绘 / 项目渲染器出的真实布局图 ──────────────────
+    PREV_DIR = ROOT / "docs/screenshots/previews"
+    for c in candidates:
+        pp = PREV_DIR / (c["key"][:-5] + ".png")
+        if pp.exists():
+            c["preview"] = b64_data_uri(pp)
+            c["previewPath"] = str(pp.relative_to(ROOT))
+            if "EXMars" in c["key"]:
+                c["previewTierLabel"] = "包内动画单帧（灰阶）"
+                c["previewTierDesc"] = "该包预览是 L8 灰阶动画帧，取其中一帧；颜色由包内 lua 运行时着色，故为灰阶"
+            else:
+                c["previewTierLabel"] = "包内立绘 / 自研渲染"
+                c["previewTierDesc"] = "包内自带 192×490 立绘，或按 face.json 渲染的真实布局；不含可辨认课程行"
+
+    # ── 同源版本去重：默认只显示最新版，旧版本降级为候选 ──────────────────
+    def _base(k):
+        return re.sub(r"-v\d[\d.]*\.face$", "", k)
+
+    def _ver(k):
+        m = re.search(r"-v(\d+(?:\.\d+)*)\.face$", k)
+        return tuple(int(x) for x in m.group(1).split(".")) if m else (0,)
+
+    groups: dict = {}
+    for c in qualified:
+        groups.setdefault(_base(c["key"]), []).append(c)
+    deduped_out = []
+    for base, grp in groups.items():
+        if len(grp) < 2:
+            continue
+        grp.sort(key=lambda c: _ver(c["key"]), reverse=True)
+        keep = grp[0]
+        for old in grp[1:]:
+            qualified.remove(old)
+            old["verified"] = False
+            old["missing"] = ["旧版本 · 已由 %s 取代（默认只显示最新版）" % keep["key"]]
+            old["recoverLabel"] = "旧版本 · 已折叠"
+            old["recoverLevel"] = "-"
+            old.setdefault("luaFreeLabel", "—")
+            old.setdefault("verdictLabel", "—")
+            old.setdefault("luaSlot", "—")
+            old.setdefault("state", "adapted")
+            deduped_out.append(old)
+    candidates = deduped_out + candidates
+
     cards = qualified + candidates
     models = sorted({c["model"] for c in cards}, key=lambda x: (x == "未知", x))
     dims = {
@@ -694,7 +738,9 @@ function cardHtml(c){
   </div>`;
   const miss=`<div class="miss"><b>为什么没进主列表</b>${c.missing.map(m=>'· '+m).join('<br>')}</div>`;
   return `<div class="card">
-    <div class="shot ph"><div class="ph-in">__I_IMG__<span>无达标预览图<br>（不含可辨认课程行）</span></div></div>
+    ${c.preview
+      ? `<div class="shot"><img src="${c.preview}" alt="${c.name} 预览图"></div>`
+      : `<div class="shot ph"><div class="ph-in">__I_IMG__<span>无预览图<br>（包内无整屏立绘）</span></div></div>`}
     <div class="cname">${c.name}</div>
     <div class="fname">${c.key}</div>
     <div class="badges">${reminder}${badgeRec(c)}${badgeSrc(c)}</div>
