@@ -95,7 +95,7 @@ def make_lua():
 -- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
 -- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
 -- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 16, 466, 160, 8
+local PB_X, PB_Y, PB_W, PB_H = 26, 440, 140, 8
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
@@ -169,19 +169,19 @@ def compose(glyphs, bg, out):
         g = Image.open(glyphs[name]).convert("RGBA")
         d2 = ImageDraw.Draw(canvas)
         canvas.paste(g, (DX[i], DIG_Y), g)
-    f24, f44 = pick(24), pick(44)
+    f20, f24, f44 = pick(20), pick(24), pick(44)
     def centered(text, y, font, color):
         w = d.textlength(text, font=font); d.text(((W-w)/2, y), text, font=font, fill=color)
     centered("上课中", 184, f24, C_STAT)
     centered("数学", 250, f44, C_MAIN)
-    d.text((14, 352), "上 语文 8:00", font=f24, fill=C_DIM)
-    d.text((14, 394), "下 英语 13:30", font=f24, fill=C_DIM)
-    d.text((14, 432), f"68%  v{VER}", font=f24, fill=C_LO)
-    # 进度条：轨道 / 已过 68% / 流光高亮块
-    d.rounded_rectangle((16,466,176,474), radius=4, fill=(34,48,76))
-    d.rounded_rectangle((16,466,16+int(160*0.68),474), radius=4, fill=AMBER)
-    gx = 16 + int(160*0.68*0.55)
-    d.rounded_rectangle((gx,466,min(gx+22,176),474), radius=4, fill=(255,213,138))
+    d.text((20, 332), "上 语文 8:00", font=f24, fill=C_DIM)
+    d.text((20, 372), "下 英语 13:30", font=f24, fill=C_DIM)
+    d.text((20, 410), f"68%  v{VER}", font=f20, fill=C_DIM)
+    # 进度条 y=440：y=466 时胶囊底部圆角只剩 63px 半宽，两端会被裁
+    d.rounded_rectangle((26,440,166,448), radius=4, fill=(34,48,76))
+    d.rounded_rectangle((26,440,26+int(140*0.68),448), radius=4, fill=AMBER)
+    gx = 26 + int(140*0.68*0.55)
+    d.rounded_rectangle((gx,440,min(gx+22,166),448), radius=4, fill=(255,213,138))
     canvas.save(out)
     return out
 

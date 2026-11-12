@@ -234,7 +234,7 @@ end
 -- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
 -- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
 -- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 16, 466, 160, 8
+local PB_X, PB_Y, PB_W, PB_H = 26, 440, 140, 8
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
