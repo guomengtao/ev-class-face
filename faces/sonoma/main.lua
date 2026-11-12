@@ -1,5 +1,5 @@
--- EV Aurora v1.0.0 · 视觉系课程表盘（Daymatter 壳）
--- 版式（ev-six v5 合规）：图片数字时间 / 上课中状态块 / 当前课44px / 上下节课24px
+-- EVfSonoma v1.0.1 · 照片背景课程表盘（Daymatter 壳）
+-- 版式（ev-six v5 合规）：图片数字时间 / 状态进度带 / 当前课44px / 上下节课24px
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
 local VERSION = "v1.0.1"
@@ -216,11 +216,11 @@ local function rows3()
         _G.ev_progress = 0
     end
     -- 状态块（24px，底色区域已压进背景图）
-    if cur then l_stat:set { text = "上课中", text_color = C_STAT }
+    if cur then l_stat:set { text = "", text_color = C_STAT }
     elseif nxt then
         if nxt.start - mins <= 15 then l_stat:set { text = "即将上课", text_color = 0xEF9F27 }
         else l_stat:set { text = "课间休息", text_color = C_STAT } end
-    elseif #list > 0 then l_stat:set { text = "今日结束", text_color = C_DIM }
+    elseif #list > 0 then l_stat:set { text = "", text_color = C_DIM }
     else l_stat:set { text = "今日无课", text_color = C_DIM } end
     -- 当前课 44px（无课则显示下节或占位）
     local main = cur and cur.name or (nxt and nxt.name) or ""

@@ -153,6 +153,16 @@ end)
                   '_G.ev_screen_on = true\nrefresh()\nprint("EV_SONOMA_V1"', 1)
     # RULES.md §1.2：兜底文案不得用品牌名，改留空；运行时状态由进度/颜色表达
     t = t.replace('"EV课程表"', '""')
+    # RULES.md §3.3：「上课中」「今日结束」是看不见的小字，删文字、留状态色 + 进度带
+    for st, col in (("上课中", "C_STAT"), ("今日结束", "C_DIM")):
+        src = f'l_stat:set {{ text = "{st}", text_color = {col} }}'
+        assert src in t, f"运行时状态文字未匹配: {st}"
+        t = t.replace(src, f'l_stat:set {{ text = "", text_color = {col} }}')
+    # 注释也不留继承来的品牌名与旧版本号（RULES.md §2.3 四处同源）
+    t = t.replace('-- EV Aurora v1.0.0 · 视觉系课程表盘（Daymatter 壳）',
+                  f'-- EVfSonoma v{VER} · 照片背景课程表盘（Daymatter 壳）', 1)
+    t = t.replace('-- 版式（ev-six v5 合规）：图片数字时间 / 上课中状态块 / 当前课44px / 上下节课24px',
+                  '-- 版式（ev-six v5 合规）：图片数字时间 / 状态进度带 / 当前课44px / 上下节课24px', 1)
     p = SRC / "main.lua"; p.write_text(t, encoding="utf-8")
     print(f"  lua 源码 {p.stat().st_size} B（进度条 + 1s 流光 Timer 已注入，pcall 保护）")
     return p
