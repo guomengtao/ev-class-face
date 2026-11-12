@@ -24,7 +24,7 @@ SLOT = "_lua/daymatter/"
 W, H = 192, 490
 DIG_Y, CELL_W, DIG_H = 68, 34, 56
 DX = [7, 43, 79, 115, 151]
-FACE_ID, FACE_NAME, VER = "9798252662", "EV-Sonoma", "1.0.0"
+FACE_ID, FACE_NAME, VER = "9798252662", "EV-Sonoma", "1.0.1"
 AMBER = (240, 163, 43); C_STAT = (127, 216, 188); C_MAIN = (238, 244, 255)
 C_DIM = (175, 190, 215); C_LO = (120, 138, 170)
 PHOTO = ASSETS / "photo_src.png"           # Sonoma 风景照 192×490（已入库，构建可复现）
@@ -95,7 +95,7 @@ def make_lua():
 -- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
 -- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
 -- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 26, 440, 140, 8
+local PB_X, PB_Y, PB_W, PB_H = 26, 140, 140, 8
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
@@ -151,6 +151,8 @@ end)
     t = t.replace(old, old + '\n    _G.ev_sonoma_anim = lvgl.Timer { period = 1000, cb = function() _G.ev_tick_anim() end }', 1)
     t = t.replace('refresh()\nprint("EV_AURORA_V1"',
                   '_G.ev_screen_on = true\nrefresh()\nprint("EV_SONOMA_V1"', 1)
+    # RULES.md §1.2：兜底文案不得用品牌名，改留空；运行时状态由进度/颜色表达
+    t = t.replace('"EV课程表"', '""')
     p = SRC / "main.lua"; p.write_text(t, encoding="utf-8")
     print(f"  lua 源码 {p.stat().st_size} B（进度条 + 1s 流光 Timer 已注入，pcall 保护）")
     return p
@@ -169,19 +171,22 @@ def compose(glyphs, bg, out):
         g = Image.open(glyphs[name]).convert("RGBA")
         d2 = ImageDraw.Draw(canvas)
         canvas.paste(g, (DX[i], DIG_Y), g)
-    f20, f24, f44 = pick(20), pick(24), pick(44)
+    # RULES.md §3：字号只取 24/44，禁 <24px 小字；状态用进度/颜色表达，不写「上课中」
+    f24, f44 = pick(24), pick(44)
     def centered(text, y, font, color):
         w = d.textlength(text, font=font); d.text(((W-w)/2, y), text, font=font, fill=color)
-    centered("上课中", 184, f24, C_STAT)
-    centered("数学", 250, f44, C_MAIN)
-    d.text((20, 332), "上 语文 8:00", font=f24, fill=C_DIM)
-    d.text((20, 372), "下 英语 13:30", font=f24, fill=C_DIM)
-    d.text((20, 410), f"68%  v{VER}", font=f20, fill=C_DIM)
-    # 进度条 y=440：y=466 时胶囊底部圆角只剩 63px 半宽，两端会被裁
-    d.rounded_rectangle((26,440,166,448), radius=4, fill=(34,48,76))
-    d.rounded_rectangle((26,440,26+int(140*0.68),448), radius=4, fill=AMBER)
+    # 进度带 y=140（时间下方）：y=440 起属胶囊底部圆角禁放区，两端会被裁
+    d.rounded_rectangle((26,140,166,148), radius=4, fill=(34,48,76))
+    d.rounded_rectangle((26,140,26+int(140*0.68),148), radius=4, fill=AMBER)
     gx = 26 + int(140*0.68*0.55)
-    d.rounded_rectangle((gx,440,min(gx+22,166),448), radius=4, fill=(255,213,138))
+    d.rounded_rectangle((gx,140,min(gx+22,166),148), radius=4, fill=(255,213,138))
+    centered("数学", 190, f44, C_MAIN)
+    # 等效字数 ≤6P：语文 8:00 ≈5.3P / 英语 13:30 ≈5.9P（原「上 语文 08:00」≈6.3P 越界）
+    d.text((20, 290), "语文 8:00", font=f24, fill=C_DIM)
+    d.text((20, 330), "英语 13:30", font=f24, fill=C_DIM)
+    # RULES.md §2：底部只放表盘英文名 + 三位版本号，各 24px 独立成行
+    d.text((20, 378), "EVfSonoma", font=f24, fill=C_MAIN)
+    d.text((20, 412), f"v{VER}", font=f24, fill=C_DIM)
     canvas.save(out)
     return out
 
@@ -194,9 +199,9 @@ def showcase(prev, out):
     cw, ch = 760, H*S + 190
     c = Image.new("RGB", (cw, ch), (9,15,28)); OX, OY = (cw-W*S)//2, 76
     c.paste(big, (OX, OY), mask); d = ImageDraw.Draw(c)
-    d.text((36, 24), 'EV Sonoma v1.0.0 · 照片背景 + 圆头数码管 + 课程进度/流光', font=pick(22), fill=(242,246,255))
-    d.text((36, ch-60), '真实风景照背景（烘入渐变蒙版） · 圆头胶囊七段 · 底部进度条 68% · 1s 流光高亮块', font=pick(15), fill=(150,168,196))
-    d.text((36, ch-36), '动画仅在「上课中 + 亮屏」启用；Object 绘制全部 pcall 保护，失败不白屏', font=pick(15), fill=(150,168,196))
+    d.text((36, 24), f'EVfSonoma v{VER} · 照片背景 + 圆头数码管 + 课程进度/流光', font=pick(22), fill=(242,246,255))
+    d.text((36, ch-60), f'照片背景 · 圆头七段 · 状态进度带 1s 流光 · 底部 EVfSonoma + v{VER}', font=pick(15), fill=(150,168,196))
+    d.text((36, ch-36), '动画仅在上课中 + 亮屏启用；Object 绘制 pcall 保护，失败不白屏', font=pick(15), fill=(150,168,196))
     c.save(out); return out
 
 def main():

@@ -2,7 +2,7 @@
 -- 版式（ev-six v5 合规）：图片数字时间 / 上课中状态块 / 当前课44px / 上下节课24px
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
-local VERSION = "v1.0.0"
+local VERSION = "v1.0.1"
 
 -- ===== 课程表数据层（内联自 shared/lua/schedule_core.lua，裁剪只读路径版）=====
 local PKG = "com.application.watch.classschedule"
@@ -223,7 +223,7 @@ local function rows3()
     elseif #list > 0 then l_stat:set { text = "今日结束", text_color = C_DIM }
     else l_stat:set { text = "今日无课", text_color = C_DIM } end
     -- 当前课 44px（无课则显示下节或占位）
-    local main = cur and cur.name or (nxt and nxt.name) or "EV课程表"
+    local main = cur and cur.name or (nxt and nxt.name) or ""
     l_cur:set { text = cut(main, 3) }
     -- 上 / 下节课（24px，≤6P："上 语文 08:00"）
     l_up:set { text = prev and ("上 " .. cut(prev.name, 3) .. " " .. hms(prev.start)) or "" }
@@ -234,7 +234,7 @@ end
 -- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
 -- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
 -- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 26, 440, 140, 8
+local PB_X, PB_Y, PB_W, PB_H = 26, 140, 140, 8
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
@@ -289,7 +289,7 @@ local function refresh()
         if not text then l_up:set { text = "" }; l_dn:set { text = "请开课程表" } end
     end)
     if not ok then
-        l_stat:set { text = "EV课程表" }
+        l_stat:set { text = "" }
         l_cur:set { text = "数据未就绪" }
         l_up:set { text = "" }; l_dn:set { text = "" }
     end
