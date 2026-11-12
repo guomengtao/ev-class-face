@@ -4,7 +4,7 @@
 基于 Daymatter 壳（与 Aurora 同槽结构），但三处独立：
   1) bg9 换成风景照（RGBA8 色型 6，与原槽编码一致），并烘入渐变暗蒙版保证文字可读；
   2) 时间字形改为圆头胶囊七段（PIL 直绘 2 色硬边，不经字体、不抗锯齿）；
-  3) lua 增加纯 LVGL 进度条 + 1s 流光 Timer，全部 pcall 保护，失败不影响主表盘。
+  3) lua 用 20 个小 Object 拼环形刻度进度 + 1s 彗星拖尾流光，全段 pcall 保护。
 """
 import re, sys, tempfile, struct
 from pathlib import Path
@@ -24,7 +24,7 @@ SLOT = "_lua/daymatter/"
 W, H = 192, 490
 DIG_Y, CELL_W, DIG_H = 68, 34, 56
 DX = [7, 43, 79, 115, 151]
-FACE_ID, FACE_NAME, VER = "9798252662", "EV-Sonoma", "1.0.1"
+FACE_ID, FACE_NAME, VER = "9798252662", "EV-Sonoma", "1.1.0"
 AMBER = (240, 163, 43); C_STAT = (127, 216, 188); C_MAIN = (238, 244, 255)
 C_DIM = (175, 190, 215); C_LO = (120, 138, 170)
 PHOTO = ASSETS / "photo_src.png"           # Sonoma 风景照 192×490（已入库，构建可复现）
@@ -48,12 +48,12 @@ def make_bg():
     p = Image.open(PHOTO).convert("RGBA")
     if p.size != (W, H): p = p.resize((W, H), Image.LANCZOS)
     shade = Image.new("RGBA", (W, H), (0,0,0,0)); sd = ImageDraw.Draw(shade)
+    # RULES §3.5：照片实测 y370-445 是亮黄绿(亮度188)，最需压暗；旧曲线底部
+    # alpha 反而衰减到 18，白字/灰字直接糊在亮绿上。改为「上轻下重」反向补偿。
     for y in range(H):
         t = y / H
-        if t < 0.12: a = int(25 + 95*t/0.12)
-        elif t < 0.48: a = 120
-        else: a = max(18, int(120 - 82*(t-0.48)/0.52))
-        sd.line((0, y, W, y), fill=(8, 14, 26, a))
+        a = int(120 + 95 * t)
+        sd.line((0, y, W, y), fill=(10, 16, 34, a))
     out = Image.alpha_composite(p, shade)
     path = ASSETS / "bg_sonoma.png"; out.save(path, optimize=True)
     assert path.stat().st_size < 145528, f"背景 {path.stat().st_size}B 爆槽"
@@ -64,7 +64,7 @@ def make_bg():
     q64 = ASSETS / "bg_sonoma_preview64.png"; q.save(q64, optimize=True)
     from shared import rle as _r
     print(f"  背景 RGBA8 {path.stat().st_size:6d} / 145528 B  (色型 6，与原 bg9 一致)")
-    print(f"  预览用 64 色派生版 RLE {len(_r.encode(q.tobytes()))}B / 31156B")
+    print(f"  预览派生 64 色参考 RLE {len(_r.encode(q.tobytes()))}B（后续自适应量化入槽）")
     return path, q64
 
 def render_glyphs(tmp):
@@ -92,39 +92,52 @@ def make_lua():
     t = AUR.read_text(encoding="utf-8")
     t = re.sub(r'local VERSION = "[^"]*"', f'local VERSION = "v{VER}"', t, count=1)
     inject = r'''
--- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
--- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
--- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 26, 140, 140, 8
+-- ---------- 环形分段刻度进度 + 彗星流光（纯 LVGL Object，不占图片槽） ----------
+-- 位置：时间下方中部焦点区（RULES §3.2 不靠下）；20 段沿圆周，进度点亮，
+-- 0.5s Timer 让「彗星头 + 2 段拖尾」只在已完成区间循环跑，替代死板的单条填充。
+-- 只用已实证的 lvgl.Object / lvgl.Timer；arc / Anim / Line 无真机显示实证，不赌。
+-- 整段 pcall 保护：任一属性不支持则环不显示，主表盘照常工作。
+local RING_CX, RING_CY, RING_R, RING_N = 96, 174, 38, 20
+local R_ON, R_OFF = 0xF0A32B, 0x415A85
+local R_HOT, R_MID, R_TAIL = 0xFFEBC0, 0xFFC069, 0xC87A22
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
-    local bg = lvgl.Object(scr, { w=PB_W, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0x22304C, bg_opa=255, radius=4, border_width=0 })
-    local fill = lvgl.Object(scr, { w=1, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0xF0A32B, bg_opa=255, radius=4, border_width=0 })
-    local glow = lvgl.Object(scr, { w=22, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0xFFD58A, bg_opa=0, radius=4, border_width=0 })
-    pcall(function()
-        bg:clear_flag(lvgl.FLAG.SCROLLABLE)
-        fill:clear_flag(lvgl.FLAG.SCROLLABLE)
-        glow:clear_flag(lvgl.FLAG.SCROLLABLE)
-    end)
-    local phase = 0
+    local segs = {}
+    for i = 1, RING_N do
+        local a = -math.pi / 2 + (i - 1) * 2 * math.pi / RING_N
+        local x = math.floor(RING_CX + RING_R * math.cos(a) - 2)
+        local y = math.floor(RING_CY + RING_R * math.sin(a) - 4)
+        local o = lvgl.Object(scr, { x = x, y = y, w = 4, h = 9,
+            bg_color = R_OFF, bg_opa = 255, radius = 2, border_width = 0 })
+        pcall(function() o:clear_flag(lvgl.FLAG.SCROLLABLE) end)
+        segs[i] = o
+    end
+    local core = lvgl.Object(scr, { x = RING_CX - 4, y = RING_CY - 4, w = 8, h = 8,
+        bg_color = R_ON, bg_opa = 255, radius = 4, border_width = 0 })
+    pcall(function() core:clear_flag(lvgl.FLAG.SCROLLABLE) end)
+    local lit, phase = 0, 0
     _G.ev_apply_progress = function()
         local p = _G.ev_progress or 0
+        lit = math.floor(RING_N * p + 0.5)
         pcall(function()
-            fill:set { w = math.max(1, math.floor(PB_W * p)) }
-            glow:set { bg_opa = (_G.ev_in_class and _G.ev_screen_on) and 200 or 0 }
+            for i = 1, RING_N do
+                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
+            end
+            core:set { bg_opa = (_G.ev_in_class and _G.ev_screen_on) and 255 or 80 }
         end)
     end
     _G.ev_tick_anim = function()
-        if not (_G.ev_in_class and _G.ev_screen_on) then return end
-        phase = (phase + 1) % 20
-        local span = math.max(1, math.floor(PB_W * (_G.ev_progress or 0)))
+        if not (_G.ev_in_class and _G.ev_screen_on) or lit < 1 then return end
+        phase = (phase + 1) % lit
         pcall(function()
-            glow:set { x = PB_X + math.floor((phase / 20) * span),
-                       bg_opa = 140 + math.floor(70 * math.abs(math.sin(phase / 3))) }
+            for i = 1, RING_N do
+                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
+            end
+            for k = 0, 2 do
+                local idx = ((phase - k) % lit) + 1
+                segs[idx]:set { bg_color = (k == 0) and R_HOT or ((k == 1) and R_MID or R_TAIL) }
+            end
         end)
     end
 end)
@@ -148,7 +161,7 @@ end)
                   '    _G.ev_screen_on = (now == "ON")\n    if now == "ON" then refresh() end', 1)
     old = '_G.ev_aurora_timer = lvgl.Timer { period = 10000, cb = function() refresh() end }'
     assert old in t
-    t = t.replace(old, old + '\n    _G.ev_sonoma_anim = lvgl.Timer { period = 1000, cb = function() _G.ev_tick_anim() end }', 1)
+    t = t.replace(old, old + '\n    _G.ev_sonoma_anim = lvgl.Timer { period = 500, cb = function() _G.ev_tick_anim() end }', 1)
     t = t.replace('refresh()\nprint("EV_AURORA_V1"',
                   '_G.ev_screen_on = true\nrefresh()\nprint("EV_SONOMA_V1"', 1)
     # RULES.md §1.2：兜底文案不得用品牌名，改留空；运行时状态由进度/颜色表达
@@ -162,10 +175,30 @@ end)
     t = t.replace('-- EV Aurora v1.0.0 · 视觉系课程表盘（Daymatter 壳）',
                   f'-- EVfSonoma v{VER} · 照片背景课程表盘（Daymatter 壳）', 1)
     t = t.replace('-- 版式（ev-six v5 合规）：图片数字时间 / 上课中状态块 / 当前课44px / 上下节课24px',
-                  '-- 版式（ev-six v5 合规）：图片数字时间 / 状态进度带 / 当前课44px / 上下节课24px', 1)
+                  '-- 版式（ev-six v5 合规）：图片数字时间 / 环形刻度进度 / 当前课44px / 上下节课24px', 1)
     p = SRC / "main.lua"; p.write_text(t, encoding="utf-8")
-    print(f"  lua 源码 {p.stat().st_size} B（进度条 + 1s 流光 Timer 已注入，pcall 保护）")
+    print(f"  lua 源码 {p.stat().st_size} B（环形刻度 + 0.5s 流光 Timer 已注入，pcall 保护）")
     return p
+
+def check_contrast(bg_path):
+    """RULES §3.5：每条文字行与照片背景的对比度硬断言，1:1 可读性程序化把关。"""
+    from PIL import ImageStat
+    im = Image.open(bg_path).convert("RGB")
+    def rl(rgb):
+        def f(c):
+            c /= 255.0
+            return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+        r, g, b = rgb
+        return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b)
+    rows = [(60, 130, '时间56px', rl(AMBER), 3.0),
+            (232, 292, '当前课44px', rl(C_MAIN), 3.0),
+            (300, 368, '课程行24px', rl(C_DIM), 4.5),
+            (378, 446, '底部24px', rl(C_DIM), 4.5)]
+    for y0, y1, label, Lt, need in rows:
+        Lb = rl(tuple(ImageStat.Stat(im.crop((20, y0, 172, y1))).mean))
+        cr = (max(Lt, Lb) + 0.05) / (min(Lt, Lb) + 0.05)
+        print(f"  对比度 {label:12s} {cr:4.2f}:1  (需 >= {need})")
+        assert cr >= need, f"{label} 对比度 {cr:.2f}:1 不足 {need}:1"
 
 def pick(size):
     for c in ("/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc",
@@ -179,22 +212,30 @@ def compose(glyphs, bg, out):
     for i, ch in enumerate(['0','8',':','0','0']):
         name = "mao.png" if ch == ":" else f"{ch}.png"
         g = Image.open(glyphs[name]).convert("RGBA")
-        d2 = ImageDraw.Draw(canvas)
         canvas.paste(g, (DX[i], DIG_Y), g)
-    # RULES.md §3：字号只取 24/44，禁 <24px 小字；状态用进度/颜色表达，不写「上课中」
+    # RULES §3：字号只取 24/44；状态用非文字表达，不写「上课中」
     f24, f44 = pick(24), pick(44)
     def centered(text, y, font, color):
         w = d.textlength(text, font=font); d.text(((W-w)/2, y), text, font=font, fill=color)
-    # 进度带 y=140（时间下方）：y=440 起属胶囊底部圆角禁放区，两端会被裁
-    d.rounded_rectangle((26,140,166,148), radius=4, fill=(34,48,76))
-    d.rounded_rectangle((26,140,26+int(140*0.68),148), radius=4, fill=AMBER)
-    gx = 26 + int(140*0.68*0.55)
-    d.rounded_rectangle((gx,140,min(gx+22,166),148), radius=4, fill=(255,213,138))
-    centered("数学", 190, f44, C_MAIN)
-    # 等效字数 ≤6P：语文 8:00 ≈5.3P / 英语 13:30 ≈5.9P（原「上 语文 08:00」≈6.3P 越界）
-    d.text((20, 290), "语文 8:00", font=f24, fill=C_DIM)
-    d.text((20, 330), "英语 13:30", font=f24, fill=C_DIM)
-    # RULES.md §2：底部只放表盘英文名 + 三位版本号，各 24px 独立成行
+    # 环形分段刻度：坐标公式与包内 lua 完全同源（RULES §3.4-7），预览展示 phase=3 的一帧
+    import math
+    RING_CX, RING_CY, RING_R, RING_N = 96, 174, 38, 20
+    R_ON, R_OFF = AMBER, (65, 90, 133)
+    R_TRAIL = [(255, 235, 192), (255, 192, 105), (200, 122, 34)]
+    lit = int(RING_N * 0.68 + 0.5); phase = 3
+    for i in range(1, RING_N + 1):
+        a = -math.pi / 2 + (i - 1) * 2 * math.pi / RING_N
+        x = int(RING_CX + RING_R * math.cos(a) - 2)
+        y = int(RING_CY + RING_R * math.sin(a) - 4)
+        col = R_ON if i <= lit else R_OFF
+        for k in range(3):
+            if lit > 0 and ((phase - k) % lit) + 1 == i: col = R_TRAIL[k]
+        d.rounded_rectangle((x, y, x + 4, y + 9), radius=2, fill=col)
+    d.ellipse((RING_CX-4, RING_CY-4, RING_CX+4, RING_CY+4), fill=AMBER)
+    centered("数学", 232, f44, C_MAIN)
+    d.text((20, 300), "语文 8:00", font=f24, fill=C_DIM)
+    d.text((20, 334), "英语 13:30", font=f24, fill=C_DIM)
+    # RULES §2：底部只放表盘英文名 + 三位版本号，各 24px 独立成行，末行 ≤448
     d.text((20, 378), "EVfSonoma", font=f24, fill=C_MAIN)
     d.text((20, 412), f"v{VER}", font=f24, fill=C_DIM)
     canvas.save(out)
@@ -209,14 +250,14 @@ def showcase(prev, out):
     cw, ch = 760, H*S + 190
     c = Image.new("RGB", (cw, ch), (9,15,28)); OX, OY = (cw-W*S)//2, 76
     c.paste(big, (OX, OY), mask); d = ImageDraw.Draw(c)
-    d.text((36, 24), f'EVfSonoma v{VER} · 照片背景 + 圆头数码管 + 课程进度/流光', font=pick(22), fill=(242,246,255))
-    d.text((36, ch-60), f'照片背景 · 圆头七段 · 状态进度带 1s 流光 · 底部 EVfSonoma + v{VER}', font=pick(15), fill=(150,168,196))
-    d.text((36, ch-36), '动画仅在上课中 + 亮屏启用；Object 绘制 pcall 保护，失败不白屏', font=pick(15), fill=(150,168,196))
+    d.text((36, 24), f'EVfSonoma v{VER} · 环形刻度进度 + 彗星流光', font=pick(22), fill=(242,246,255))
+    d.text((36, ch-60), '20 段环形刻度 + 0.5s 彗星拖尾 · 上轻下重暗蒙版 · 对比度硬断言', font=pick(15), fill=(150,168,196))
+    d.text((36, ch-36), 'WCAG 对比度断言 · 动画仅上课中+亮屏 · 全段 pcall 保护', font=pick(15), fill=(150,168,196))
     c.save(out); return out
 
 def main():
     print("=== EV Sonoma 组包 ===")
-    bg, bg64 = make_bg(); lua_path = make_lua()
+    bg, bg64 = make_bg(); check_contrast(bg); lua_path = make_lua()
     lua_src = lua_path.read_text(encoding="utf-8")
     im = FaceImage(BASE)
     pw, ph, plen = im.preview_meta()
@@ -292,7 +333,7 @@ def main():
     c,cs,_ = chk.entries()[SLOT+"daymatter.lua"]
     final = bytes(chk.data[c:c+cs]).decode("utf8","ignore")
     assert "ev_sonoma_anim" in final and "ev_apply_progress" in final
-    print(f"  回读自检  ✓ 预览 {w2}x{h2}/{n}px  ✓ 包内 lua 含 1s 流光 Timer 与进度逻辑")
+    print(f"  回读自检  ✓ 预览 {w2}x{h2}/{n}px  ✓ 包内 lua 含 0.5s 流光 Timer 与进度逻辑")
     return 0
 
 if __name__ == "__main__":

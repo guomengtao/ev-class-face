@@ -1,8 +1,8 @@
--- EVfSonoma v1.0.1 · 照片背景课程表盘（Daymatter 壳）
--- 版式（ev-six v5 合规）：图片数字时间 / 状态进度带 / 当前课44px / 上下节课24px
+-- EVfSonoma v1.1.0 · 照片背景课程表盘（Daymatter 壳）
+-- 版式（ev-six v5 合规）：图片数字时间 / 环形刻度进度 / 当前课44px / 上下节课24px
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
-local VERSION = "v1.0.1"
+local VERSION = "v1.1.0"
 
 -- ===== 课程表数据层（内联自 shared/lua/schedule_core.lua，裁剪只读路径版）=====
 local PKG = "com.application.watch.classschedule"
@@ -231,39 +231,52 @@ local function rows3()
 end
 
 
--- ---------- 课程进度 + 流光（纯 LVGL 几何，不占图片槽） ----------
--- A 档：refresh() 按课时比例改填充宽度；B 档：1s Timer 让高亮块在已完成区间跑动。
--- 整段 pcall 保护：固件若不支持某个 Object 属性，进度条不显示，主表盘照常工作。
-local PB_X, PB_Y, PB_W, PB_H = 26, 140, 140, 8
+-- ---------- 环形分段刻度进度 + 彗星流光（纯 LVGL Object，不占图片槽） ----------
+-- 位置：时间下方中部焦点区（RULES §3.2 不靠下）；20 段沿圆周，进度点亮，
+-- 0.5s Timer 让「彗星头 + 2 段拖尾」只在已完成区间循环跑，替代死板的单条填充。
+-- 只用已实证的 lvgl.Object / lvgl.Timer；arc / Anim / Line 无真机显示实证，不赌。
+-- 整段 pcall 保护：任一属性不支持则环不显示，主表盘照常工作。
+local RING_CX, RING_CY, RING_R, RING_N = 96, 174, 38, 20
+local R_ON, R_OFF = 0xF0A32B, 0x415A85
+local R_HOT, R_MID, R_TAIL = 0xFFEBC0, 0xFFC069, 0xC87A22
 _G.ev_apply_progress = function() end
 _G.ev_tick_anim = function() end
 pcall(function()
-    local bg = lvgl.Object(scr, { w=PB_W, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0x22304C, bg_opa=255, radius=4, border_width=0 })
-    local fill = lvgl.Object(scr, { w=1, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0xF0A32B, bg_opa=255, radius=4, border_width=0 })
-    local glow = lvgl.Object(scr, { w=22, h=PB_H, x=PB_X, y=PB_Y,
-        bg_color=0xFFD58A, bg_opa=0, radius=4, border_width=0 })
-    pcall(function()
-        bg:clear_flag(lvgl.FLAG.SCROLLABLE)
-        fill:clear_flag(lvgl.FLAG.SCROLLABLE)
-        glow:clear_flag(lvgl.FLAG.SCROLLABLE)
-    end)
-    local phase = 0
+    local segs = {}
+    for i = 1, RING_N do
+        local a = -math.pi / 2 + (i - 1) * 2 * math.pi / RING_N
+        local x = math.floor(RING_CX + RING_R * math.cos(a) - 2)
+        local y = math.floor(RING_CY + RING_R * math.sin(a) - 4)
+        local o = lvgl.Object(scr, { x = x, y = y, w = 4, h = 9,
+            bg_color = R_OFF, bg_opa = 255, radius = 2, border_width = 0 })
+        pcall(function() o:clear_flag(lvgl.FLAG.SCROLLABLE) end)
+        segs[i] = o
+    end
+    local core = lvgl.Object(scr, { x = RING_CX - 4, y = RING_CY - 4, w = 8, h = 8,
+        bg_color = R_ON, bg_opa = 255, radius = 4, border_width = 0 })
+    pcall(function() core:clear_flag(lvgl.FLAG.SCROLLABLE) end)
+    local lit, phase = 0, 0
     _G.ev_apply_progress = function()
         local p = _G.ev_progress or 0
+        lit = math.floor(RING_N * p + 0.5)
         pcall(function()
-            fill:set { w = math.max(1, math.floor(PB_W * p)) }
-            glow:set { bg_opa = (_G.ev_in_class and _G.ev_screen_on) and 200 or 0 }
+            for i = 1, RING_N do
+                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
+            end
+            core:set { bg_opa = (_G.ev_in_class and _G.ev_screen_on) and 255 or 80 }
         end)
     end
     _G.ev_tick_anim = function()
-        if not (_G.ev_in_class and _G.ev_screen_on) then return end
-        phase = (phase + 1) % 20
-        local span = math.max(1, math.floor(PB_W * (_G.ev_progress or 0)))
+        if not (_G.ev_in_class and _G.ev_screen_on) or lit < 1 then return end
+        phase = (phase + 1) % lit
         pcall(function()
-            glow:set { x = PB_X + math.floor((phase / 20) * span),
-                       bg_opa = 140 + math.floor(70 * math.abs(math.sin(phase / 3))) }
+            for i = 1, RING_N do
+                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
+            end
+            for k = 0, 2 do
+                local idx = ((phase - k) % lit) + 1
+                segs[idx]:set { bg_color = (k == 0) and R_HOT or ((k == 1) and R_MID or R_TAIL) }
+            end
         end)
     end
 end)
@@ -301,7 +314,7 @@ function ScreenStateChangedCB(pre, now, reason)
 end
 pcall(function()
     _G.ev_aurora_timer = lvgl.Timer { period = 10000, cb = function() refresh() end }
-    _G.ev_sonoma_anim = lvgl.Timer { period = 1000, cb = function() _G.ev_tick_anim() end }
+    _G.ev_sonoma_anim = lvgl.Timer { period = 500, cb = function() _G.ev_tick_anim() end }
 end)
 _G.ev_screen_on = true
 refresh()
