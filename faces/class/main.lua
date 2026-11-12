@@ -62,9 +62,11 @@ if TA == nil then TA = 1 end
 -- @@INCLUDE:schedule_core@@
 
 -- ---------- UI：y=96..394 安全矩形区，字号全线上调 ----------
+-- 底色：image 模式恒为黑（图会盖满整屏）；solid / gradient 用用户配色
+local SOLID = (CFG.bg_mode == "solid" or CFG.bg_mode == "gradient")
 local scr = lvgl.Object(nil, {
     w = W, h = H, x = 0, y = 0,
-    bg_color = th.bg, bg_opa = lvgl.OPA(100),
+    bg_color = SOLID and CFG.bg_color1 or th.bg, bg_opa = lvgl.OPA(100),
     border_width = 0, pad_all = 0,
     -- 必须显式 radius=0：LVGL 默认样式带圆角，亮色底会被裁成一块圆角大色块，
     -- 在切换页/真机上就是用户反复看到的「大圆圈」。深色表盘看不出来，亮色表盘特别明显。
@@ -72,6 +74,17 @@ local scr = lvgl.Object(nil, {
 })
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+
+-- 渐变：走 LVGL 原生 bg_grad_*。固件不支持时 pcall 静默失败 → 退化成纯色，
+-- 这比「画一条竖直渐变图」省内存，也比自绘省代码（本固件 line/canvas 均为 NO）。
+if CFG.bg_mode == "gradient" then
+    pcall(function()
+        scr:set {
+            bg_grad_color = CFG.bg_color2,
+            bg_grad_dir = (lvgl.GRAD_DIR and lvgl.GRAD_DIR.VER) or 3,
+        }
+    end)
+end
 
 -- ---------- 自定义背景图（用户上传）----------
 -- 链路：手机 App 选图 → ev 同步器 → 快应用收字节写盘 → 本表盘读盘渲染。
@@ -95,20 +108,18 @@ local CFG_NAME = "cfg.txt"
 local CFG = {
     -- 背景：image=用户上传图 / solid=纯色 / gradient=双色纵向渐变
     bg_mode   = "image",
-    bg_color1 = 0x000000,
-    bg_color2 = 0x1E3A52,
+    bg_color1=0x000000,
+    bg_color2=0x1E3A52,
     dim       = 45,        -- 图片背景压暗不透明度 0-100
     -- 组件开关：1 显示 / 0 隐藏
-    show_time = 1, show_date = 1, show_status = 1,
-    show_subj = 1, show_next = 1, show_bar = 1, show_info = 0,
+    show_time=1, show_date = 1, show_status = 1,
+    show_subj=1, show_next = 1, show_bar = 1, show_info = 0,
     -- 5 个纵向槽位：kind 决定放什么，空串 = 该槽不显示
     -- kind: time / date / status / subj / next / bar
-    slot1 = "time", slot2 = "status", slot3 = "subj",
-    slot4 = "next", slot5 = "bar",
     -- 前景配色
-    c_time = 0xFFFFFF, c_accent = 0x7FD4FF, c_sub = 0xFFD479,
+    c_time=0xFFFFFF, c_accent = 0x7FD4FF, c_sub = 0xFFD479,
     -- 槽位纵向坐标（App 端「位置微调」写入；缺省沿用 profile 的 P.*）
-    y1 = nil, y2 = nil, y3 = nil, y4 = nil, y5 = nil,
+    y1=nil, y2 = nil, y3 = nil, y4 = nil, y5 = nil,
 }
 
 local function cfg_load()
@@ -122,8 +133,13 @@ local function cfg_load()
                 for line in body:gmatch("[^\r\n]+") do
                     local k, v = line:match("^%s*([%w_]+)%s*=%s*(.-)%s*$")
                     if k and v and v ~= "" then
+                        -- 显式解析 0x 十六进制：Lua 5.1 的 tonumber 不认 0x 前缀
                         local n = tonumber(v)
-                        CFG[k] = (n ~= nil) and n or v
+                        if not n then
+                            local h = v:match("^0[xX](%x+)$")
+                            if h then n = tonumber(h, 16) end
+                        end
+                        CFG[k] = n or v
                     end
                 end
                 return
@@ -132,6 +148,15 @@ local function cfg_load()
     end
 end
 cfg_load()
+-- 用户配色只覆盖前景三色；底色由 bg_mode 决定
+th.time, th.accent, th.sub = CFG.c_time, CFG.c_accent, CFG.c_sub
+
+-- 槽位纵坐标：只允许 ±40px 微调。手环屏幕小，自由摆放必然叠字；
+-- 限幅之后 App 端也能做成「微调滑条」，而不是需要用户自己算坐标的画布。
+local function yv(k, d)
+    local v = CFG[k]
+    return type(v) == "number" and math.max(d - 40, math.min(d + 40, v)) or d
+end
 
 -- 只读 8 字节判 PNG 签名，绝不整文件读入（大图会吃光手环内存）
 local PNG_SIG = "\137PNG\r\n\26\n"
@@ -153,10 +178,9 @@ local function bg_find()
 end
 
 local bg_path = bg_find()
+-- 只有 image 模式且真的读到图才显示；solid / gradient 模式即使盘上有图也不画
+local bg_on = (CFG.bg_mode == "image") and (bg_path ~= nil)
 local bg_img, bg_dim = nil, nil
--- 必须先于所有文字创建，才能在 z 序上垫在最底层；
--- 即便没有图也照样创建（src 指向候选路径，文件不存在时固件画空白，不报错），
--- 这样「后上传的图」只需一次 set{src=}，不必重建对象（运行中新建对象会盖住文字）。
 pcall(function()
     bg_img = scr:Image {
         src = bg_path or (BG_DIRS[1] .. BG_NAME),
@@ -167,12 +191,13 @@ pcall(function()
         bg_img:add_flag(lvgl.FLAG.EVENT_BUBBLE)
         -- 图片对象默认 CLICKABLE 会吃掉长按，必须清掉，否则整屏都进不去切换页
         pcall(function() bg_img:clear_flag(lvgl.FLAG.CLICKABLE) end)
-        if not bg_path then pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end) end
+        if not bg_on then pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end) end
     end
     bg_dim = lvgl.Object(scr, {
         w = W, h = H, x = 0, y = 0,
         bg_color = 0x000000,
-        bg_opa = bg_path and lvgl.OPA(45) or lvgl.OPA(0),
+        -- 压暗下限 30：用户传张雪景白图时，dim=0 会让白字彻底消失
+        bg_opa = bg_on and lvgl.OPA(math.max(30, CFG.dim)) or lvgl.OPA(0),
         border_width = 0, radius = 0, pad_all = 0,
     })
     if bg_dim then
@@ -183,14 +208,15 @@ end)
 
 -- 屏幕点亮时重新找一次：用户刚传完图，不必重启表盘就能看到
 local function bg_sync()
+    if CFG.bg_mode ~= "image" then return end
     local p = bg_find()
     if p == bg_path then return end
-    bg_path = p
+    bg_path, bg_on = p, (p ~= nil)
     pcall(function()
         if p then
             bg_img:set { src = p }
             pcall(function() bg_img:clear_flag(lvgl.FLAG.HIDDEN) end)
-            bg_dim:set { bg_opa = lvgl.OPA(45) }
+            bg_dim:set { bg_opa = lvgl.OPA(math.max(30, CFG.dim)) }
         else
             pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end)
             bg_dim:set { bg_opa = lvgl.OPA(0) }
@@ -199,6 +225,13 @@ local function bg_sync()
 end
 
 local labels = {}
+-- 组件显隐在创建时一次决定：cfg 只在启动时读一次，运行中不变，
+-- 没必要每 60s 刷新都重设一遍 flag（那段代码还占四百多字节容量）。
+local function vis(o, key)
+    if not o then return nil end
+    if CFG[key] ~= 1 then pcall(function() o:add_flag(lvgl.FLAG.HIDDEN) end) end
+    return o
+end
 -- 普通行：不设 w，让标签宽度自适应文字，配合 TOP_MID 天然水平居中。
 -- 旧写法给 w=W 再靠 text_align 居中，但 lvgl.TEXT_ALIGN 常量在部分固件取不到，
 -- 取不到就静默退化成左对齐 —— 跑道屏上整列文字贴左边缘，非常难看。
@@ -234,12 +267,12 @@ local function date_line()
     return string.format("%d/%d 周%s", t.month, t.day, WEEK_CN[t.wday] or "")
 end
 
-local l_time = time_label(P.y_time, P.h_time, FONT_TIME, th.time, "--:--")
-local l_stat = label(P.y_stat, P.h_stat, FONT_STAT, th.accent, "读取课表中")
-local l_subj = label(P.y_subj, P.h_subj, FONT_SUBJ, th.time, date_line())
-local l_d1   = label(P.y_d1, P.h_d1, FONT_BODY, th.sub, "")
-local l_d2   = label(P.y_d2, P.h_d2, FONT_BODY, th.sub, "")
-local l_next = label(P.y_next, P.h_next, FONT_BODY, th.accent, "")
+local l_time = vis(time_label(yv("y1", P.y_time), P.h_time, FONT_TIME, th.time, "--:--"), "show_time")
+local l_stat = vis(label(yv("y2", P.y_stat), P.h_stat, FONT_STAT, th.accent, "读取课表中"), "show_status")
+local l_subj = vis(label(yv("y3", P.y_subj), P.h_subj, FONT_SUBJ, th.time, date_line()), "show_subj")
+local l_d1   = vis(label(P.y_d1, P.h_d1, FONT_BODY, th.sub, ""), "show_next")
+local l_d2   = vis(label(P.y_d2, P.h_d2, FONT_BODY, th.sub, ""), "show_next")
+local l_next = vis(label(yv("y4", P.y_next), P.h_next, FONT_BODY, th.accent, ""), "show_next")
 
 -- 课程进度条：上课中按已上比例填充，视觉上给「还剩多久」一个直觉
 local BAR_W, BAR_H = P.bar_w, P.bar_h
@@ -270,13 +303,16 @@ pcall(function()
         w = 0, h = BAR_H, bg_color = th.accent, bg_opa = lvgl.OPA(100),
         border_width = 0, radius = 3,
     }))
-    place(bar_bg, P.y_bar)
-    place(bar_fg, P.y_bar)
+    local YB = yv("y5", P.y_bar)
+    place(bar_bg, YB)
+    place(bar_fg, YB)
+    vis(bar_bg, "show_bar")
+    vis(bar_fg, "show_bar")
 end)
 
-local l_ver  = label(P.y_ver, P.h_small, FONT_VER, th.hint, VERSION)
-local l_info1 = label(P.y_i1, P.h_small, FONT_VER, th.hint, "未探测")
-local l_info2 = label(P.y_i2, P.h_small, FONT_VER, th.hint, "未读取")
+local l_ver  = vis(label(P.y_ver, P.h_small, FONT_VER, th.hint, VERSION), "show_info")
+local l_info1 = vis(label(P.y_i1, P.h_small, FONT_VER, th.hint, "未探测"), "show_info")
+local l_info2 = vis(label(P.y_i2, P.h_small, FONT_VER, th.hint, "未读取"), "show_info")
 
 -- 主题切换已移除（apply_theme / load_theme / save_theme 一并删除）：
 -- 上面创建控件时颜色就直接取自常量 th，运行时无需再刷一遍配色。
@@ -294,9 +330,9 @@ local function refresh()
     -- 它保持初值 "EV课程表"（品牌名占位）。占位一律换成日期 + 周几；
     -- 有课的分支（即将上课/上课中/课间休息）仍然显示课名。
     if s.subject == "" or s.subject == "EV课程表" then
-        l_subj:set { text = date_line() }
+        l_subj:set { text = (CFG.show_date == 1) and date_line() or "" }
     else
-        l_subj:set { text = s.subject }
+        l_subj:set { text = (CFG.show_subj == 1) and s.subject or "" }
     end
     l_d1:set   { text = s.d1 }
     l_d2:set   { text = s.d2 }
@@ -341,5 +377,5 @@ end)
 -- 这里**故意不注册** EVENT.CLICKED：scr 仍是可点击对象，系统长按进表盘切换页不受影响；
 -- 屏幕内任何位置轻触都变成无操作，不会再把底色切走。
 refresh()
-print("EV_CLASS_BAND9_V4", W, H, "rows=" .. #labels, "courses=" .. course_count,
-      "bg=" .. tostring(bg_path), diag_a, diag_b)
+print("EV_CLASS_BAND9_V4", W, H, "courses=" .. course_count,
+      "mode=" .. tostring(CFG.bg_mode), "bg=" .. tostring(bg_path), diag_a, diag_b)
