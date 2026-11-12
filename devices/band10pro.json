@@ -14,8 +14,8 @@
   "base": null,
   "base_note": "尚未取得 336x480 官方基底 .face；放入 faces/<name>/base/ 后在 devices 填 base 即可出包",
   "fonts": {
-    "time": 62,
-    "subject": 36,
+    "time": 86,
+    "subject": 38,
     "status": 30,
     "body": 28,
     "info": 28,
@@ -30,40 +30,41 @@
   },
   "rows": {
     "time": {
-      "y": 30,
-      "h": 62,
+      "y": 44,
+      "h": 86,
       "role": "time"
     },
     "status": {
-      "y": 106,
+      "y": 156,
       "h": 34
     },
     "bar": {
-      "y": 150,
-      "w": 220,
-      "h": 8
+      "y": 196,
+      "h": 10,
+      "w": 260,
+      "font": "bar"
     },
     "subject": {
-      "y": 166,
+      "y": 216,
       "h": 48
     },
     "d1": {
-      "y": 236,
+      "y": 284,
       "h": 38,
       "role": "sub"
     },
     "d2": {
-      "y": 288,
+      "y": 328,
       "h": 38,
       "role": "sub"
     },
     "next": {
-      "y": 336,
+      "y": 376,
       "h": 36,
       "role": "accent"
     },
     "version": {
-      "y": 436,
+      "y": 428,
       "h": 24
     },
     "info1": {
