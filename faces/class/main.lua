@@ -63,36 +63,6 @@ if TA == nil then TA = 1 end
 
 -- ---------- UI：y=96..394 安全矩形区，字号全线上调 ----------
 -- 底色：image 模式恒为黑（图会盖满整屏）；solid / gradient 用用户配色
-local SOLID = (CFG.bg_mode == "solid" or CFG.bg_mode == "gradient")
-local scr = lvgl.Object(nil, {
-    w = W, h = H, x = 0, y = 0,
-    bg_color = SOLID and CFG.bg_color1 or th.bg, bg_opa = lvgl.OPA(100),
-    border_width = 0, pad_all = 0,
-    -- 必须显式 radius=0：LVGL 默认样式带圆角，亮色底会被裁成一块圆角大色块，
-    -- 在切换页/真机上就是用户反复看到的「大圆圈」。深色表盘看不出来，亮色表盘特别明显。
-    radius = 0,
-})
-scr:clear_flag(lvgl.FLAG.SCROLLABLE)
-scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
-
--- 渐变：走 LVGL 原生 bg_grad_*。固件不支持时 pcall 静默失败 → 退化成纯色，
--- 这比「画一条竖直渐变图」省内存，也比自绘省代码（本固件 line/canvas 均为 NO）。
-if CFG.bg_mode == "gradient" then
-    pcall(function()
-        scr:set {
-            bg_grad_color = CFG.bg_color2,
-            bg_grad_dir = (lvgl.GRAD_DIR and lvgl.GRAD_DIR.VER) or 3,
-        }
-    end)
-end
-
--- ---------- 自定义背景图（用户上传）----------
--- 链路：手机 App 选图 → ev 同步器 → 快应用收字节写盘 → 本表盘读盘渲染。
--- probe v1.0.2 已实测：Image:set{src=包外绝对路径} 能真实解码绘制（白方块出红块）。
--- 设计约定：
---   * 图必须是 192x490 PNG（由 App 侧预缩放），表盘不做缩放，避免手环内存吃紧；
---   * 图存在 → 画满屏 + 压一层半透明黑罩，保证白字/青蓝在任何照片上都读得清；
---   * 图不存在 → 完全退回原来的纯黑底，行为与旧版一致，不做任何多余绘制。
 local BG_NAME = "bg.png"
 local BG_DIRS = {
     "/data/quickapp/files/com.application.watch.classschedule/",
@@ -150,6 +120,37 @@ end
 cfg_load()
 -- 用户配色只覆盖前景三色；底色由 bg_mode 决定
 th.time, th.accent, th.sub = CFG.c_time, CFG.c_accent, CFG.c_sub
+
+local SOLID = (CFG.bg_mode == "solid" or CFG.bg_mode == "gradient")
+local scr = lvgl.Object(nil, {
+    w = W, h = H, x = 0, y = 0,
+    bg_color = SOLID and CFG.bg_color1 or th.bg, bg_opa = lvgl.OPA(100),
+    border_width = 0, pad_all = 0,
+    -- 必须显式 radius=0：LVGL 默认样式带圆角，亮色底会被裁成一块圆角大色块，
+    -- 在切换页/真机上就是用户反复看到的「大圆圈」。深色表盘看不出来，亮色表盘特别明显。
+    radius = 0,
+})
+scr:clear_flag(lvgl.FLAG.SCROLLABLE)
+scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+
+-- 渐变：走 LVGL 原生 bg_grad_*。固件不支持时 pcall 静默失败 → 退化成纯色，
+-- 这比「画一条竖直渐变图」省内存，也比自绘省代码（本固件 line/canvas 均为 NO）。
+if CFG.bg_mode == "gradient" then
+    pcall(function()
+        scr:set {
+            bg_grad_color = CFG.bg_color2,
+            bg_grad_dir = (lvgl.GRAD_DIR and lvgl.GRAD_DIR.VER) or 3,
+        }
+    end)
+end
+
+-- ---------- 自定义背景图（用户上传）----------
+-- 链路：手机 App 选图 → ev 同步器 → 快应用收字节写盘 → 本表盘读盘渲染。
+-- probe v1.0.2 已实测：Image:set{src=包外绝对路径} 能真实解码绘制（白方块出红块）。
+-- 设计约定：
+--   * 图必须是 192x490 PNG（由 App 侧预缩放），表盘不做缩放，避免手环内存吃紧；
+--   * 图存在 → 画满屏 + 压一层半透明黑罩，保证白字/青蓝在任何照片上都读得清；
+--   * 图不存在 → 完全退回原来的纯黑底，行为与旧版一致，不做任何多余绘制。
 
 -- 槽位纵坐标：只允许 ±40px 微调。手环屏幕小，自由摆放必然叠字；
 -- 限幅之后 App 端也能做成「微调滑条」，而不是需要用户自己算坐标的画布。
