@@ -1,6 +1,6 @@
 # 开源表盘分类台账（FACE-STATUS）
 
-> 自动生成于 2026-11-11T14:46:44+0800 · 共 **31** 个包 / **19.0MB** · 机读权威：`data/face-registry.json`
+> 自动生成于 2026-11-11T17:19:58+0800 · 共 **31** 个包 / **19.0MB** · 机读权威：`data/face-registry.json`
 
 > 本表由 `python3 tools/face_inventory.py` 刷新；`state` 列由人或 Worker 维护，扫描不会覆盖。
 
@@ -17,17 +17,17 @@
 
 | 状态 | 判定 | KB | 包名 | lua 块 | 槽位 | 余量 | 来源/许可 |
 |---|---|---|---|---|---|---|---|
+| 已上真机验证 | ✅ 可直改 | 124 | `Band9-Analog-v1.0.8.face` | `lua/main.lua` | 17287B | 5545B | 自研 build.py / — |
+| 已上真机验证 | 🟡 截短后可改 | 124 | `Band9-Class-v1.0.15.face` | `lua/main.lua` | 17287B | 2780B | 自研 build.py / — |
 | 已上真机验证 | 🟡 截短后可改 | 52 | `Band9-LuaCalculator-v1.0.0.face` | `lua/main.lua` | 13616B | 2B | github.com/hassan-xsf/band-face-pack / MIT |
+| 已上真机验证 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.2.0.face` | `_lua/monika/monika.lua` | 31895B | 120B | github.com/sf-yuzifu/Monika v1.2.0 + B … / — |
 | 已上真机验证 | 🟡 截短后可改 | 739 | `Band9-Monika-v1.2.0.face` | `_lua/monika/monika.lua` | 31895B | 2B | github.com/sf-yuzifu/Monika/releases/v1… / GPL-3.0 |
-| 已接入课程提醒 | ✅ 可直改 | 124 | `Band9-Analog-v1.0.8.face` | `lua/main.lua` | 17287B | 5545B | 自研 build.py / — |
+| 已上真机验证 | 🟡 截短后可改 | 52 | `Band9-Quartz-v1.0.13.face` | `lua/main.lua` | 13616B | 2229B | 自研 build.py / — |
 | 已接入课程提醒 | ✅ 可直改 | 124 | `Band9-Class-v1.0.14.face` | `lua/main.lua` | 17287B | 3717B | 自研 build.py / — |
-| 已接入课程提醒 | 🟡 截短后可改 | 124 | `Band9-Class-v1.0.15.face` | `lua/main.lua` | 17287B | 2780B | 自研 build.py / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.0.0.face` | `_lua/monika/monika.lua` | 31789B | 396B | gitee.com/sf-yuzifu/Monika / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.0.1.face` | `_lua/monika/monika.lua` | 31789B | 187B | github.com/sf-yuzifu/Monika v1.0.0 + A … / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.1.0.face` | `_lua/monika/monika.lua` | 31789B | 120B | gitee.com/sf-yuzifu/Monika / — |
-| 已接入课程提醒 | 🟡 截短后可改 | 739 | `Band9-Monika-EV-v1.2.0.face` | `_lua/monika/monika.lua` | 31895B | 120B | github.com/sf-yuzifu/Monika v1.2.0 + B … / — |
 | 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Oneline-v1.0.1.face` | `lua/main.lua` | 13616B | 2896B | 自研 build.py / — |
-| 已接入课程提醒 | 🟡 截短后可改 | 52 | `Band9-Quartz-v1.0.13.face` | `lua/main.lua` | 13616B | 2229B | 自研 build.py / — |
 | 待改造 | ✅ 可直改 | 124 | `Band9-Smash-v1.0.0.face` | `lua/main.lua` | 17287B | 5710B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
 | 待改造 | ✅ 可直改 | 124 | `Band9-TempControl-Large-v1.0.0.face` | `lua/main.lua` | 17287B | 6546B | github.com/m0tral/MiWatchLuaWatchfaces … / 未声明 |
 | 待改造 | 🟡 截短后可改 | 197 | `Band9-Daymatter-v1.0.0.face` | `_lua/daymatter/daymatter.lua` | 14369B | 2B | github.com/sf-yuzifu/Daymatter_Watchfac… / 未声明 |
