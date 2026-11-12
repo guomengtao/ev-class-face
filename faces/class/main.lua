@@ -73,6 +73,131 @@ local scr = lvgl.Object(nil, {
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
 
+-- ---------- 自定义背景图（用户上传）----------
+-- 链路：手机 App 选图 → ev 同步器 → 快应用收字节写盘 → 本表盘读盘渲染。
+-- probe v1.0.2 已实测：Image:set{src=包外绝对路径} 能真实解码绘制（白方块出红块）。
+-- 设计约定：
+--   * 图必须是 192x490 PNG（由 App 侧预缩放），表盘不做缩放，避免手环内存吃紧；
+--   * 图存在 → 画满屏 + 压一层半透明黑罩，保证白字/青蓝在任何照片上都读得清；
+--   * 图不存在 → 完全退回原来的纯黑底，行为与旧版一致，不做任何多余绘制。
+local BG_NAME = "bg.png"
+local BG_DIRS = {
+    "/data/quickapp/files/com.application.watch.classschedule/",
+    "/data/quickapp/files/",
+    "/tmp/",
+}
+
+-- ---------- 用户配置（App 端编辑 -> 同步器 -> 快应用写 cfg.txt -> 本表盘读取）----------
+-- 格式刻意选「逐行 key=value」而不是 JSON：Lua 沙箱没有 json 库，手写解析器又要吃几百字节
+-- 的 lua 容量（class 表盘只剩约 2KB 余量），KV 解析 20 行内能搞定且容错简单。
+-- 缺字段一律回落到下方 CFG 的默认值，保证「没有配置文件 = 与旧版完全一致」。
+local CFG_NAME = "cfg.txt"
+local CFG = {
+    -- 背景：image=用户上传图 / solid=纯色 / gradient=双色纵向渐变
+    bg_mode   = "image",
+    bg_color1 = 0x000000,
+    bg_color2 = 0x1E3A52,
+    dim       = 45,        -- 图片背景压暗不透明度 0-100
+    -- 组件开关：1 显示 / 0 隐藏
+    show_time = 1, show_date = 1, show_status = 1,
+    show_subj = 1, show_next = 1, show_bar = 1, show_info = 0,
+    -- 5 个纵向槽位：kind 决定放什么，空串 = 该槽不显示
+    -- kind: time / date / status / subj / next / bar
+    slot1 = "time", slot2 = "status", slot3 = "subj",
+    slot4 = "next", slot5 = "bar",
+    -- 前景配色
+    c_time = 0xFFFFFF, c_accent = 0x7FD4FF, c_sub = 0xFFD479,
+    -- 槽位纵向坐标（App 端「位置微调」写入；缺省沿用 profile 的 P.*）
+    y1 = nil, y2 = nil, y3 = nil, y4 = nil, y5 = nil,
+}
+
+local function cfg_load()
+    for _, d in ipairs(BG_DIRS) do
+        local ok, f = pcall(io.open, d .. CFG_NAME, "rb")
+        if ok and f then
+            local body = nil
+            pcall(function() body = f:read("*a") end)
+            pcall(function() f:close() end)
+            if body and #body > 0 then
+                for line in body:gmatch("[^\r\n]+") do
+                    local k, v = line:match("^%s*([%w_]+)%s*=%s*(.-)%s*$")
+                    if k and v and v ~= "" then
+                        local n = tonumber(v)
+                        CFG[k] = (n ~= nil) and n or v
+                    end
+                end
+                return
+            end
+        end
+    end
+end
+cfg_load()
+
+-- 只读 8 字节判 PNG 签名，绝不整文件读入（大图会吃光手环内存）
+local PNG_SIG = "\137PNG\r\n\26\n"
+local function is_png_file(p)
+    local ok, f = pcall(io.open, p, "rb")
+    if not ok or not f then return false end
+    local hdr = nil
+    pcall(function() hdr = f:read(8) end)
+    pcall(function() f:close() end)
+    return hdr == PNG_SIG
+end
+
+local function bg_find()
+    for _, d in ipairs(BG_DIRS) do
+        local p = d .. BG_NAME
+        if is_png_file(p) then return p end
+    end
+    return nil
+end
+
+local bg_path = bg_find()
+local bg_img, bg_dim = nil, nil
+-- 必须先于所有文字创建，才能在 z 序上垫在最底层；
+-- 即便没有图也照样创建（src 指向候选路径，文件不存在时固件画空白，不报错），
+-- 这样「后上传的图」只需一次 set{src=}，不必重建对象（运行中新建对象会盖住文字）。
+pcall(function()
+    bg_img = scr:Image {
+        src = bg_path or (BG_DIRS[1] .. BG_NAME),
+        x = 0, y = 0, w = W, h = H,
+    }
+    if bg_img then
+        bg_img:clear_flag(lvgl.FLAG.SCROLLABLE)
+        bg_img:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+        -- 图片对象默认 CLICKABLE 会吃掉长按，必须清掉，否则整屏都进不去切换页
+        pcall(function() bg_img:clear_flag(lvgl.FLAG.CLICKABLE) end)
+        if not bg_path then pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end) end
+    end
+    bg_dim = lvgl.Object(scr, {
+        w = W, h = H, x = 0, y = 0,
+        bg_color = 0x000000,
+        bg_opa = bg_path and lvgl.OPA(45) or lvgl.OPA(0),
+        border_width = 0, radius = 0, pad_all = 0,
+    })
+    if bg_dim then
+        pcall(function() bg_dim:clear_flag(lvgl.FLAG.CLICKABLE) end)
+        pcall(function() bg_dim:add_flag(lvgl.FLAG.EVENT_BUBBLE) end)
+    end
+end)
+
+-- 屏幕点亮时重新找一次：用户刚传完图，不必重启表盘就能看到
+local function bg_sync()
+    local p = bg_find()
+    if p == bg_path then return end
+    bg_path = p
+    pcall(function()
+        if p then
+            bg_img:set { src = p }
+            pcall(function() bg_img:clear_flag(lvgl.FLAG.HIDDEN) end)
+            bg_dim:set { bg_opa = lvgl.OPA(45) }
+        else
+            pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end)
+            bg_dim:set { bg_opa = lvgl.OPA(0) }
+        end
+    end)
+end
+
 local labels = {}
 -- 普通行：不设 w，让标签宽度自适应文字，配合 TOP_MID 天然水平居中。
 -- 旧写法给 w=W 再靠 text_align 居中，但 lvgl.TEXT_ALIGN 常量在部分固件取不到，
@@ -206,7 +331,7 @@ local function refresh()
 end
 
 function ScreenStateChangedCB(pre, now, reason)
-    if pre ~= "ON" and now == "ON" then refresh() end
+    if pre ~= "ON" and now == "ON" then bg_sync() refresh() end
 end
 pcall(function()
     _G.ev_class_timer = lvgl.Timer { period = 60000, cb = function() refresh() end }
@@ -216,4 +341,5 @@ end)
 -- 这里**故意不注册** EVENT.CLICKED：scr 仍是可点击对象，系统长按进表盘切换页不受影响；
 -- 屏幕内任何位置轻触都变成无操作，不会再把底色切走。
 refresh()
-print("EV_CLASS_BAND9_V4", W, H, "rows=" .. #labels, "courses=" .. course_count, diag_a, diag_b)
+print("EV_CLASS_BAND9_V4", W, H, "rows=" .. #labels, "courses=" .. course_count,
+      "bg=" .. tostring(bg_path), diag_a, diag_b)

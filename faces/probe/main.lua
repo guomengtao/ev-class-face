@@ -6,6 +6,9 @@
 -- 猜错的代价是整款表盘做废。装一次 probe，全部问清楚。
 --
 -- 结果同时「画在屏上」（结论唯一可靠的回传通道）和 print 到日志。
+--
+-- v1.0.2 新增「探针四」：用户上传背景图是否可行（img 的 src 能否吃包外绝对路径）。
+-- 判读见下方 fs_wr / img_abs 与屏幕左侧白方块。
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
 
@@ -115,6 +118,67 @@ T("anim", function() return (lvgl.Anim ~= nil) or (lvgl.Animation ~= nil) end)
 T("line", function() return lvgl.Line ~= nil end)
 T("canvas", function() return lvgl.Canvas ~= nil end)
 
+-- ===== 探针四（决定性）：Image 的 src 能否指向「包外绝对路径」=====
+-- 回答一个问题：用户上传的背景图能不能落地。
+-- Lua 侧没有 PNG 编码器，所以这里内嵌一张 16x16 纯红 PNG（79 字节），
+-- 先用 io.open 写进快应用数据目录（同步器唯一能落盘的位置），
+-- 再把绝对路径喂给 Image。判读：
+--   白方块里出现红块 → C 路成立（App 上传背景图可做）
+--   白方块空白       → src 只认包内资源，只能走预设背景
+local QDIR = "/data/quickapp/files/com.application.watch.classschedule/"
+local PNG16 = "\137\80\78\71\13\10\26\10\0\0\0\13\73\72\68\82\0\0\0\16\0\0\0\16\8\2\0\0\0\144\145\104\54\0\0\0\22\73\68\65\84\120\218\99\248\175\161\65\18\98\24\213\48\170\97\248\106\0\0\240\31\79\16\87\50\248\128\0\0\0\0\73\69\78\68\174\66\96\130"
+local PNG_SZ = 79
+
+local function write_png(dir)
+    local p = dir .. "evprobe.png"
+    local ok, f = pcall(io.open, p, "wb")
+    if not ok or not f then return nil, -1 end
+    local wok = pcall(function() f:write(PNG16) end)
+    pcall(function() f:close() end)
+    if not wok then return p, -2 end
+    local ok2, f2 = pcall(io.open, p, "rb")
+    if not ok2 or not f2 then return p, -3 end
+    local d = f2:read("*a")
+    f2:close()
+    return p, (d and #d) or -4
+end
+
+-- 逐目录试写：真机上哪个目录可写，一次问清（QDIR 是同步器落盘的那一个）
+local DIRS = {
+    QDIR,
+    "/data/quickapp/files/",
+    "/data/quickapp/files/ev/",
+    "/tmp/",
+    "/data/local/tmp/",
+}
+local IMG_PATH, IMG_SZ, WR_DIR = nil, -1, "none"
+for _, d in ipairs(DIRS) do
+    local p, sz = write_png(d)
+    if p and sz == PNG_SZ then IMG_PATH, IMG_SZ, WR_DIR = p, sz, d break end
+    if p and sz > 0 then IMG_PATH, IMG_SZ, WR_DIR = p, sz, d end
+end
+T("fs_wr", function()
+    return IMG_PATH ~= nil and IMG_SZ == PNG_SZ
+end)
+
+-- 先建一个 src 为不存在文件的 Image，再用 set{src=绝对路径} 切过去：
+-- aurora 的数字换图正是走 set{src=}，所以只测「创建」不够。
+local box, red = nil, nil
+local ABS = IMG_PATH or (QDIR .. "evprobe.png")
+pcall(function()
+    box = lvgl.Object(scr, {
+        w = 44, h = 44, x = 8, y = 150,
+        bg_color = 0xF2F4F8, bg_opa = lvgl.OPA(100),
+        radius = 0, border_width = 0, pad_all = 0,
+    })
+    red = scr:Image { src = ABS .. ".none", x = 22, y = 164, w = 16, h = 16 }
+end)
+T("img_abs", function()
+    if not red then return false end
+    red:set { src = ABS }
+    return true
+end)
+
 -- ---------- 可视化：一根真指针（同时是 pivot 的活体探针）----------
 -- 判读方法（只看这一根杆就够了）：
 --   指针在 hub 周围转、永远从 hub 出发 → angle 可用 且 pivot 可用，金属指针表盘可以直接做
@@ -143,14 +207,16 @@ local l_time = label(0, 96, 30, F(30), C_TEXT, "--:--", true)
 local l_note = label(0, 130, 22, FONT_TAG, C_DIM, "", true)
 
 -- ---------- 结论行 ----------
+-- 行数按实际探针数量自适应，避免加了探针却看不到结果
 local rows = {}
-local BASE_Y = 300
-for i = 1, 7 do
-    rows[i] = label(8, BASE_Y + (i - 1) * 26, 24, FONT_TAG, C_DIM, "")
+local NROW = #R
+local BASE_Y, ROW_STEP = 252, 21
+for i = 1, NROW do
+    rows[i] = label(8, BASE_Y + (i - 1) * ROW_STEP, 20, FONT_TAG, C_DIM, "")
 end
 
 local function paint()
-    for i = 1, 7 do
+    for i = 1, NROW do
         local r = R[i]
         local lb = rows[i]
         if not r then lb:set { text = "" }
@@ -187,3 +253,4 @@ refresh()
 local parts = {}
 for i = 1, #R do parts[#parts + 1] = R[i].tag .. "=" .. R[i].state end
 print("EV_PROBE", VERSION, table.concat(parts, " "))
+print("EV_PROBE_DIR", WR_DIR, tostring(IMG_SZ), tostring(ABS))
