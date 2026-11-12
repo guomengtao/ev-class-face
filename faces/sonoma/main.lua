@@ -1,8 +1,8 @@
--- EVfSonoma v1.1.0 · 照片背景课程表盘（Daymatter 壳）
--- 版式（ev-six v5 合规）：图片数字时间 / 环形刻度进度 / 当前课44px / 上下节课24px
+-- EVfSonoma v1.2.0 · 照片背景课程表盘（Daymatter 壳）
+-- 版式（ev-six v5 合规）：图片数字时间 / 上课中状态块 / 当前课44px / 上下节课24px
 local lvgl = require("lvgl")
 local W, H = lvgl.HOR_RES(), lvgl.VER_RES()
-local VERSION = "v1.1.0"
+local VERSION = "v1.2.0"
 
 -- ===== 课程表数据层（内联自 shared/lua/schedule_core.lua，裁剪只读路径版）=====
 local PKG = "com.application.watch.classschedule"
@@ -134,159 +134,144 @@ local function F(size)
     if ok and f then return f end
     return lvgl.BUILTIN_FONT.MONTSERRAT_20
 end
-local F24 = F(24)
-local F44 = F(44)
+local F24, F44 = F(24), F(44)
+local C_MAIN, C_DIM = 0xEEF4FF, 0x9BA6C4
 
-local C_MAIN = 0xEEF4FF
-local C_STAT = 0x7FD8BC
-local C_DIM  = 0x9BA6C4
-local C_LO   = 0x5A6488
-
--- ---------- 场景骨架（长按事件必须上抛，否则进不去切换页）----------
-local scr = lvgl.Object(nil, {
-    w = W, h = H, bg_opa = 0, border_width = 0, pad_all = 0,
-})
+local scr = lvgl.Object(nil, { w = W, h = H, bg_opa = 0, border_width = 0, pad_all = 0 })
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
 
+-- 装饰件必须清 CLICKABLE（否则吃掉长按、进不了切换页）+ 上抛事件
+local function passive(o)
+    if not o then return nil end
+    pcall(function() o:clear_flag(lvgl.FLAG.CLICKABLE) end)
+    pcall(function() o:clear_flag(lvgl.FLAG.SCROLLABLE) end)
+    pcall(function() o:add_flag(lvgl.FLAG.EVENT_BUBBLE) end)
+    return o
+end
 local function img(path, x, y)
     local w = scr:Image { src = path, x = x, y = y }
-    w:clear_flag(lvgl.FLAG.SCROLLABLE)
-    w:add_flag(lvgl.FLAG.EVENT_BUBBLE)
-    return w
+    return passive(w)
 end
 local function label(y, h, font, color, text)
-    return lvgl.Label(scr, {
+    return passive(lvgl.Label(scr, {
         h = h, text = text or "", text_font = font, text_color = color,
         bg_opa = 0, border_width = 0, pad_all = 0,
         align = { type = lvgl.ALIGN.TOP_MID, x_ofs = 0, y_ofs = y },
-    })
+    }))
 end
 
--- 背景（整屏插画，assets/bg9.png）
 img(SCRIPT_PATH .. "bg9.png", 0, 0)
 
--- 时间：5 张图片数字（34x72，等宽步进 34，居中 x0=11）
-local DX = { 11, 45, 79, 113, 147 }
+-- 时间：5 张图片数字，取槽由组包器按容量 best-fit 回填（勿手改）
+local DX = { 7, 43, 79, 115, 151 }
 local DFILE = { "0.png","1.png","2.png","3.png","4.png","5.png","6.png","7.png","8.png","9.png" }
--- 冒号单独一个常量：组包时槽位是动态分配的，它和 DFILE 里的槽名可能互换，
--- 绝不能用「全局替换 mao.png」的办法改名（v1.0.19 就是这么把数字 5 换成冒号的）
 local COLON = "mao.png"
 local dig = {}
-for i = 1, 5 do dig[i] = img(SCRIPT_PATH .. DFILE[1], DX[i], 52) end
+for i = 1, 5 do dig[i] = img(SCRIPT_PATH .. DFILE[1], DX[i], 100) end
 
--- 课程层（y 按 192x490 版式实排）
-local l_stat = label(180, 34, F24, C_STAT, "")
-local l_cur  = label(252, 60, F44, C_MAIN, "")
-local l_up   = label(356, 32, F24, C_DIM, "")
-local l_dn   = label(398, 32, F24, C_DIM, "")
-local l_ver  = label(436, 30, F24, C_LO, VERSION)
-
+-- ---------- 进度/流光带：只用 faces/class 生产盘已实证的 API ----------
+-- lvgl.Object 构造 + set{x} / set{w} + lvgl.Timer；不碰 set{bg_color/bg_opa}。
+-- 静态轨道 + 课程完成度填充 + 一颗来回扫的高亮彗星，永远在动、永远看得见。
+local BAND_X, BAND_Y, BAND_W, BAND_H = 12, 176, 168, 16
+local COMET_W, ANIM_STEPS = 30, 12
+local track, fill, comet
 pcall(function()
-    local dataman = require("dataman")
-    dataman.subscribe("systemStatusBattery", l_ver, function(obj, encoded)
-        local lvl = encoded // 256
-        if type(lvl) ~= "number" or lvl < 0 or lvl > 100 then return end
-        obj:set { text = lvl .. "%  " .. VERSION }
-    end)
+    track = passive(lvgl.Object(scr, { x = BAND_X, y = BAND_Y, w = BAND_W, h = BAND_H,
+        bg_color = 0x1C304E, bg_opa = 255, border_width = 0, radius = 8 }))
+    fill = passive(lvgl.Object(scr, { x = BAND_X, y = BAND_Y, w = 8, h = BAND_H,
+        bg_color = 0xF0A32B, bg_opa = 255, border_width = 0, radius = 8 }))
+    comet = passive(lvgl.Object(scr, { x = BAND_X, y = BAND_Y, w = COMET_W, h = BAND_H,
+        bg_color = 0xFFF0CD, bg_opa = 255, border_width = 0, radius = 8 }))
 end)
 
-local function two(n) return (n < 10) and ("0" .. n) or tostring(n) end
-local function hms(mins) return two(mins // 60) .. ":" .. two(mins % 60) end
+local l_cur  = label(222, 60, F44, C_MAIN, "")
+local l_up   = label(300, 32, F24, C_DIM, "")
+local l_dn   = label(336, 32, F24, C_DIM, "")
+-- RULES §2：底部两行独立，24px，上移出圆角禁放区；电量不进底部
+local l_name = label(376, 32, F24, C_MAIN, "EVfSonoma")
+local l_ver  = label(410, 32, F24, C_MAIN, "v1.2.0")
 
-local sig_cache = "#none"
-local last_min = -1
+local WD = { "周日","周一","周二","周三","周四","周五","周六" }
+local function two(n) return (n < 10) and ("0" .. n) or tostring(n) end
+local function hm(mins) return tostring(mins // 60) .. ":" .. two(mins % 60) end
+local function today() return os.date("*t", os.time()) end
+local function dow(t) return ((t.wday or 1) == 1) and 7 or ((t.wday or 2) - 1) end
+
+-- 空数据兜底：不留白、不写品牌名、不写看不见的小字（RULES §1.2 / §3.3）
+local function fallback_rows()
+    local t = today()
+    l_cur:set { text = "无课" }
+    l_up:set  { text = string.format("%d月%d日", t.month, t.day) }
+    l_dn:set  { text = WD[t.wday or 1] or "" }
+end
+
+local function progress_value()
+    local t = today(); local mins = (t.hour or 0) * 60 + (t.min or 0)
+    local list = schedule[dow(t)] or {}
+    if #list == 0 then return 0.35 + 0.65 * mins / 1440 end
+    local done = 0
+    for _, c in ipairs(list) do if c.finish <= mins then done = done + 1 end end
+    for _, c in ipairs(list) do
+        if c.start <= mins and mins < c.finish then
+            return (done + (mins - c.start) / math.max(1, c.finish - c.start)) / #list
+        end
+    end
+    return done / #list
+end
+
+_G.ev_progress = 0
+_G.ev_screen_on = true
+_G.ev_apply_progress = function() end
+_G.ev_tick_anim = function() end
+pcall(function()
+    _G.ev_apply_progress = function()
+        pcall(function()
+            local pw = math.max(8, math.floor(BAND_W * math.max(0, math.min(1, _G.ev_progress or 0))))
+            _G.ev_fill_base = pw
+            fill:set { w = pw }
+        end)
+    end
+    local phase, step = 0, 1
+    _G.ev_tick_anim = function()
+        if _G.ev_screen_on == false then return end
+        phase = phase + step
+        if phase >= ANIM_STEPS - 1 then step = -1 end
+        if phase <= 0 then step = 1 end
+        pcall(function()
+            comet:set { x = BAND_X + math.floor((BAND_W - COMET_W) * phase / (ANIM_STEPS - 1)) }
+        end)
+        -- 双保险：set{w} 是 faces/class 生产盘 Timer 内已实证的调用，
+        -- 即使某机型不支持 set{x}（或彗星创建失败），填充带呼吸也一定在动
+        pcall(function()
+            local base = _G.ev_fill_base or 8
+            local pulse = math.floor(7 * math.sin(phase * math.pi / (ANIM_STEPS - 1)))
+            fill:set { w = math.max(8, base + pulse) }
+        end)
+    end
+end)
 
 local function rows3()
-    local t = os.date("*t", os.time())
-    local mins = (t.hour or 0) * 60 + (t.min or 0)
-    local day = (t.wday or 1) == 1 and 7 or (t.wday - 1)
-    local list = schedule[day] or {}
+    local t = today(); local mins = (t.hour or 0) * 60 + (t.min or 0)
+    local list = schedule[dow(t)] or {}
     local prev, cur, nxt = nil, nil, nil
     for _, c in ipairs(list) do
         if c.start <= mins and mins < c.finish then cur = c end
         if c.finish <= mins then prev = c end
         if c.start > mins and not nxt then nxt = c end
     end
-    if cur then
-        _G.ev_in_class = true
-        _G.ev_progress = math.max(0, math.min(1, (mins - cur.start) / math.max(1, cur.finish - cur.start)))
-    else
-        _G.ev_in_class = false
-        _G.ev_progress = 0
-    end
-    -- 状态块（24px，底色区域已压进背景图）
-    if cur then l_stat:set { text = "", text_color = C_STAT }
-    elseif nxt then
-        if nxt.start - mins <= 15 then l_stat:set { text = "即将上课", text_color = 0xEF9F27 }
-        else l_stat:set { text = "课间休息", text_color = C_STAT } end
-    elseif #list > 0 then l_stat:set { text = "", text_color = C_DIM }
-    else l_stat:set { text = "今日无课", text_color = C_DIM } end
-    -- 当前课 44px（无课则显示下节或占位）
-    local main = cur and cur.name or (nxt and nxt.name) or ""
-    l_cur:set { text = cut(main, 3) }
-    -- 上 / 下节课（24px，≤6P："上 语文 08:00"）
-    l_up:set { text = prev and ("上 " .. cut(prev.name, 3) .. " " .. hms(prev.start)) or "" }
-    l_dn:set { text = nxt and ("下 " .. cut(nxt.name, 3) .. " " .. hms(nxt.start)) or "" }
+    l_cur:set { text = cut((cur and cur.name) or (nxt and nxt.name) or "无课", 3) }
+    l_up:set  { text = prev and (cut(prev.name, 3) .. " " .. hm(prev.start))
+                       or string.format("%d月%d日", t.month, t.day) }
+    l_dn:set  { text = nxt and (cut(nxt.name, 3) .. " " .. hm(nxt.start)) or (WD[t.wday or 1] or "") }
 end
 
-
--- ---------- 环形分段刻度进度 + 彗星流光（纯 LVGL Object，不占图片槽） ----------
--- 位置：时间下方中部焦点区（RULES §3.2 不靠下）；20 段沿圆周，进度点亮，
--- 0.5s Timer 让「彗星头 + 2 段拖尾」只在已完成区间循环跑，替代死板的单条填充。
--- 只用已实证的 lvgl.Object / lvgl.Timer；arc / Anim / Line 无真机显示实证，不赌。
--- 整段 pcall 保护：任一属性不支持则环不显示，主表盘照常工作。
-local RING_CX, RING_CY, RING_R, RING_N = 96, 174, 38, 20
-local R_ON, R_OFF = 0xF0A32B, 0x415A85
-local R_HOT, R_MID, R_TAIL = 0xFFEBC0, 0xFFC069, 0xC87A22
-_G.ev_apply_progress = function() end
-_G.ev_tick_anim = function() end
-pcall(function()
-    local segs = {}
-    for i = 1, RING_N do
-        local a = -math.pi / 2 + (i - 1) * 2 * math.pi / RING_N
-        local x = math.floor(RING_CX + RING_R * math.cos(a) - 2)
-        local y = math.floor(RING_CY + RING_R * math.sin(a) - 4)
-        local o = lvgl.Object(scr, { x = x, y = y, w = 4, h = 9,
-            bg_color = R_OFF, bg_opa = 255, radius = 2, border_width = 0 })
-        pcall(function() o:clear_flag(lvgl.FLAG.SCROLLABLE) end)
-        segs[i] = o
-    end
-    local core = lvgl.Object(scr, { x = RING_CX - 4, y = RING_CY - 4, w = 8, h = 8,
-        bg_color = R_ON, bg_opa = 255, radius = 4, border_width = 0 })
-    pcall(function() core:clear_flag(lvgl.FLAG.SCROLLABLE) end)
-    local lit, phase = 0, 0
-    _G.ev_apply_progress = function()
-        local p = _G.ev_progress or 0
-        lit = math.floor(RING_N * p + 0.5)
-        pcall(function()
-            for i = 1, RING_N do
-                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
-            end
-            core:set { bg_opa = (_G.ev_in_class and _G.ev_screen_on) and 255 or 80 }
-        end)
-    end
-    _G.ev_tick_anim = function()
-        if not (_G.ev_in_class and _G.ev_screen_on) or lit < 1 then return end
-        phase = (phase + 1) % lit
-        pcall(function()
-            for i = 1, RING_N do
-                segs[i]:set { bg_color = (i <= lit) and R_ON or R_OFF }
-            end
-            for k = 0, 2 do
-                local idx = ((phase - k) % lit) + 1
-                segs[idx]:set { bg_color = (k == 0) and R_HOT or ((k == 1) and R_MID or R_TAIL) }
-            end
-        end)
-    end
-end)
-
+local last_min = -1
+local sig_cache = "#none"
 local function refresh()
-    local t = os.date("*t", os.time())
-    local h, m = t.hour or 0, t.min or 0
+    local t = today(); local h, m = t.hour or 0, t.min or 0
     if m ~= last_min then
         last_min = m
-        local hs = two(h); local ms = two(m)
         dig[1]:set { src = SCRIPT_PATH .. DFILE[h // 10 + 1] }
         dig[2]:set { src = SCRIPT_PATH .. DFILE[h % 10 + 1] }
         dig[3]:set { src = SCRIPT_PATH .. COLON }
@@ -298,14 +283,10 @@ local function refresh()
         local sig = text or "#none"
         if sig ~= sig_cache then parse_schedule(text); sig_cache = sig end
         rows3()
-        _G.ev_apply_progress()
-        if not text then l_up:set { text = "" }; l_dn:set { text = "请开课程表" } end
     end)
-    if not ok then
-        l_stat:set { text = "" }
-        l_cur:set { text = "数据未就绪" }
-        l_up:set { text = "" }; l_dn:set { text = "" }
-    end
+    if not ok then fallback_rows() end
+    _G.ev_progress = progress_value()
+    _G.ev_apply_progress()
 end
 
 function ScreenStateChangedCB(pre, now, reason)
@@ -313,9 +294,10 @@ function ScreenStateChangedCB(pre, now, reason)
     if now == "ON" then refresh() end
 end
 pcall(function()
-    _G.ev_aurora_timer = lvgl.Timer { period = 10000, cb = function() refresh() end }
-    _G.ev_sonoma_anim = lvgl.Timer { period = 500, cb = function() _G.ev_tick_anim() end }
+    _G.ev_sonoma_refresh = lvgl.Timer { period = 10000, cb = function() refresh() end }
 end)
-_G.ev_screen_on = true
+pcall(function()
+    _G.ev_sonoma_anim = lvgl.Timer { period = 220, cb = function() _G.ev_tick_anim() end }
+end)
 refresh()
-print("EV_SONOMA_V1", W, H, VERSION, "courses=" .. course_count)
+print("EV_SONOMA_V2", W, H, VERSION, "courses=" .. course_count)
