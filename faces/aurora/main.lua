@@ -169,6 +169,9 @@ img(SCRIPT_PATH .. "bg9.png", 0, 0)
 -- 时间：5 张图片数字（34x72，等宽步进 34，居中 x0=11）
 local DX = { 11, 45, 79, 113, 147 }
 local DFILE = { "0.png","1.png","2.png","3.png","4.png","5.png","6.png","7.png","8.png","9.png" }
+-- 冒号单独一个常量：组包时槽位是动态分配的，它和 DFILE 里的槽名可能互换，
+-- 绝不能用「全局替换 mao.png」的办法改名（v1.0.19 就是这么把数字 5 换成冒号的）
+local COLON = "mao.png"
 local dig = {}
 for i = 1, 5 do dig[i] = img(SCRIPT_PATH .. DFILE[1], DX[i], 52) end
 
@@ -228,7 +231,7 @@ local function refresh()
         local hs = two(h); local ms = two(m)
         dig[1]:set { src = SCRIPT_PATH .. DFILE[h // 10 + 1] }
         dig[2]:set { src = SCRIPT_PATH .. DFILE[h % 10 + 1] }
-        dig[3]:set { src = SCRIPT_PATH .. "mao.png" }
+        dig[3]:set { src = SCRIPT_PATH .. COLON }
         dig[4]:set { src = SCRIPT_PATH .. DFILE[m // 10 + 1] }
         dig[5]:set { src = SCRIPT_PATH .. DFILE[m % 10 + 1] }
     end
