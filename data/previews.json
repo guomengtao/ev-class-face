@@ -1,0 +1,299 @@
+[
+  {
+    "file": "Band9-Analog-v1.0.8.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-AnalogFull-v1.0.0.face",
+    "size": 1094548,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Class-v1.0.14.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Class-v1.0.15.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-DaZiQingXi-v1.0.0.face",
+    "size": 205168,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Daymatter-v1.0.0.face",
+    "size": 201744,
+    "entries": 15,
+    "hit": {
+      "name": "_lua/daymatter/bg9.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-EXMars-EV-v1.1.0.face",
+    "size": 1535838,
+    "entries": 47,
+    "hit": null,
+    "decoded": 47,
+    "candidates": []
+  },
+  {
+    "file": "Band9-EXMars-v1.1.0.face",
+    "size": 1535838,
+    "entries": 47,
+    "hit": null,
+    "decoded": 47,
+    "candidates": []
+  },
+  {
+    "file": "Band9-EXMars-v2.0.0.face",
+    "size": 1479339,
+    "entries": 47,
+    "hit": null,
+    "decoded": 47,
+    "candidates": []
+  },
+  {
+    "file": "Band9-EXMars-v3.0.0.face",
+    "size": 1507249,
+    "entries": 47,
+    "hit": null,
+    "decoded": 47,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Expenses-v1.0.0.face",
+    "size": 154684,
+    "entries": 238,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-FlappyBird-v1.0.0.face",
+    "size": 299892,
+    "entries": 100,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-FuGuShuMa-v1.0.0.face",
+    "size": 164164,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-LuaCalculator-v1.0.0.face",
+    "size": 53172,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-EV-v1.0.0.face",
+    "size": 756860,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-EV-v1.0.1.face",
+    "size": 756860,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-EV-v1.1.0.face",
+    "size": 756860,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-EV-v1.2.0.face",
+    "size": 756968,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-v1.0.0.face",
+    "size": 756860,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Monika-v1.2.0.face",
+    "size": 756968,
+    "entries": 38,
+    "hit": {
+      "name": "_lua/monika/bg.png",
+      "size": [
+        192,
+        490
+      ],
+      "blksize": null
+    },
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-MonikaDefault-v1.0.0.face",
+    "size": 1781840,
+    "entries": 53,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Oneline-v1.0.1.face",
+    "size": 53172,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Probe-v1.0.1.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Quartz-v1.0.13.face",
+    "size": 53172,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Smash-v1.0.0.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-Stride-v1.0.0.face",
+    "size": 209484,
+    "entries": 194,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-TempControl-Large-v1.0.0.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-TempControl-v1.0.0.face",
+    "size": 53172,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-TicTacToe-v1.0.0.face",
+    "size": 126900,
+    "entries": 50,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-TongQinYiBiao-v1.0.0.face",
+    "size": 203540,
+    "entries": 0,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  },
+  {
+    "file": "Band9-WatchDripGraph-v1.0.0.face",
+    "size": 3882404,
+    "entries": 232,
+    "hit": null,
+    "decoded": 0,
+    "candidates": []
+  }
+]
