@@ -1,5 +1,6 @@
 -- EV 石英 v5 · 巨型分体时间 + 周几月日 / 上课信息（科目·状态·下节）
 -- v5: 修两处硬伤 —— 补 EVENT_BUBBLE（长按进不去切换页）、全表字号提到 24-44（原来 14-20 真机上看不见）
+-- v6: 加「背景开关」测试版 —— 双击表盘切换 采用课表背景 / 用本表盘默认纯黑。
 -- 设计取向与 class 表盘刻意拉开距离：
 --   class = 信息面板（多行小字、冷青强调、课程进度条）
 --   clock = 石英挂钟（超大字重、上下分体数字、暖白/琥珀双色、细分割线、无卡片）
@@ -17,6 +18,7 @@ local function F(size, fallback)
 end
 -- @@PROFILE_BEGIN@@
 -- 机型 profile：构建时由 build.py 按 devices/<device>.json 整块替换。
+-- 表盘逻辑只有一份，坐标与字号全部来自这里，源码不写死任何屏幕尺寸。
 local P = {
   safe_top = 96, safe_bottom = 394,
   f_wday = 16, f_mday = 16, f_big = 50, f_csubj = 20, f_cstat = 16,
@@ -66,8 +68,81 @@ local scr = lvgl.Object(nil, {
 })
 scr:clear_flag(lvgl.FLAG.SCROLLABLE)
 -- 关键：不加上抛，触摸事件止于本层，系统收不到长按 → 进不了表盘切换页。
--- class 表盘一直有这一行，石英漏了，表现就是「长按无反应」。
 scr:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+
+-- ---------- 背景开关（测试版，仅 EV 石英；状态存在表盘自己这边） ----------
+-- 约定：全局只有一份 bg.png / cfg.txt，本表盘自己决定是否采用；
+-- 不采用就完全保持纯黑底，与旧版逐像素一致。
+-- 状态文件用 /tmp（历史 THEME_FILE 与探针档同目录，已实证表盘可写）；
+-- 文件名自带表盘标识，不依赖系统分配的表盘 ID，中心侧无需维护任何名单。
+local SW_FILE = "/tmp/ev_bg_clock.txt"
+local BG_DIRS = {
+    "/data/quickapp/files/com.application.watch.classschedule/",
+    "/data/quickapp/files/",
+    "/tmp/",
+}
+local PNG_SIG = "\137PNG\r\n\26\n"
+local function is_png(p)
+    local ok, f = pcall(io.open, p, "rb")
+    if not ok or not f then return false end
+    local h = nil
+    pcall(function() h = f:read(8) end)
+    pcall(function() f:close() end)
+    return h == PNG_SIG
+end
+local function bg_find()
+    for _, d in ipairs(BG_DIRS) do
+        local p = d .. "bg.png"
+        if is_png(p) then return p end
+    end
+    return nil
+end
+local function sw_load()
+    local ok, f = pcall(io.open, SW_FILE, "r")
+    if not ok or not f then return 0 end
+    local s = nil
+    pcall(function() s = f:read(1) end)
+    pcall(function() f:close() end)
+    return s == "1" and 1 or 0
+end
+local function sw_save(v)
+    pcall(function()
+        local f = io.open(SW_FILE, "w")
+        if f then f:write(v == 1 and "1" or "0"); f:close() end
+    end)
+end
+
+local bg_path = bg_find()
+local bg_on = (sw_load() == 1) and (bg_path ~= nil)
+local batt_txt = ""
+local function ver_line()
+    return VERSION .. (batt_txt ~= "" and ("  " .. batt_txt) or "")
+           .. (bg_on and "  BG开" or "  BG关")
+end
+local bg_img, bg_dim = nil, nil
+pcall(function()
+    bg_img = scr:Image {
+        src = bg_path or (BG_DIRS[1] .. "bg.png"),
+        x = 0, y = 0, w = W, h = H,
+    }
+    if bg_img then
+        bg_img:clear_flag(lvgl.FLAG.SCROLLABLE)
+        bg_img:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+        -- 图片默认 CLICKABLE 会吃掉长按，必须清掉
+        pcall(function() bg_img:clear_flag(lvgl.FLAG.CLICKABLE) end)
+        if not bg_on then pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end) end
+    end
+    bg_dim = lvgl.Object(scr, {
+        w = W, h = H, x = 0, y = 0,
+        bg_color = 0x000000,
+        bg_opa = bg_on and lvgl.OPA(45) or lvgl.OPA(0),
+        border_width = 0, radius = 0, pad_all = 0,
+    })
+    if bg_dim then
+        pcall(function() bg_dim:clear_flag(lvgl.FLAG.CLICKABLE) end)
+        pcall(function() bg_dim:add_flag(lvgl.FLAG.EVENT_BUBBLE) end)
+    end
+end)
 
 local function label(y, h, font, color, text)
     local p = {
@@ -97,7 +172,19 @@ local l_mm   = label(P.y_mm, P.h_mm, FONT_BIG, C_MM, "--")
 local l_subj = label(P.y_c_subj, P.h_c_subj, FONT_SUBJ, C_HH, "读取课表中")
 local l_stat = label(P.y_c_stat, P.h_c_stat, FONT_STAT, C_WDAY, "")
 local l_next = label(P.y_c_next, P.h_c_next, FONT_NEXT, C_HINT, "")
-local l_ver  = label(P.y_version, P.h_version, FONT_VER, C_DIM, VERSION)
+local l_ver  = label(P.y_version, P.h_version, FONT_VER, C_DIM, ver_line())
+
+-- 电量角标：做法照抄 Monika —— dataman.subscribe("systemStatusBattery")，值需 //256。
+-- 版本号行同时承载「背景开/关」状态，不额外占槽位。
+pcall(function()
+    local dataman = require("dataman")
+    dataman.subscribe("systemStatusBattery", l_ver, function(obj, encoded)
+        local lvl = encoded // 256
+        if type(lvl) ~= "number" or lvl < 0 or lvl > 100 then return end
+        batt_txt = lvl .. "%"
+        obj:set { text = ver_line() }
+    end)
+end)
 
 local WD = { "周日", "周一", "周二", "周三", "周四", "周五", "周六" }
 local function two(n) return (n < 10) and ("0" .. n) or tostring(n) end
@@ -132,12 +219,51 @@ local function refresh()
     end
 end
 
+-- ---------- 开关交互：双击（单次轻触保持无操作，避免抬腕误触） ----------
+local function bg_apply()
+    pcall(function()
+        if bg_on then
+            bg_img:set { src = bg_path }
+            pcall(function() bg_img:clear_flag(lvgl.FLAG.HIDDEN) end)
+            bg_dim:set { bg_opa = lvgl.OPA(45) }
+        else
+            pcall(function() bg_img:add_flag(lvgl.FLAG.HIDDEN) end)
+            bg_dim:set { bg_opa = lvgl.OPA(0) }
+        end
+    end)
+    l_ver:set { text = ver_line() }
+end
+local function bg_sync()
+    if not bg_on then return end
+    local p = bg_find()
+    if p and p ~= bg_path then
+        bg_path = p
+        pcall(function() bg_img:set { src = p } end)
+    end
+end
+local last_tap = -10
+scr:onevent(lvgl.EVENT.CLICKED, function()
+    local t = os.time()
+    if t - last_tap > 1 then last_tap = t; return end
+    last_tap = -10
+    local next_on = not bg_on
+    if next_on then
+        local p = bg_find()
+        if p then bg_path = p else next_on = false end
+    end
+    if next_on == bg_on then return end
+    bg_on = next_on
+    sw_save(bg_on and 1 or 0)
+    bg_apply()
+end)
+
 function ScreenStateChangedCB(pre, now, reason)
-    if now == "ON" then refresh() end
+    if now == "ON" then bg_sync() refresh() end
 end
 pcall(function()
     _G.ev_clock_timer = lvgl.Timer { period = 10000, cb = function() refresh() end }
 end)
 
 refresh()
-print("EV_QUARTZ_V5", W, H, VERSION, "courses=" .. course_count)
+print("EV_QUARTZ_V6", W, H, VERSION, "courses=" .. course_count,
+      "bg=" .. tostring(bg_on), "path=" .. tostring(bg_path))
